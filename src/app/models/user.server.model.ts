@@ -3,18 +3,15 @@ import Logger from '../../config/logger';
 import { ResultSetHeader } from 'mysql2'
 
 const insert = async (
-    email: String,
-    first_name: String,
-    last_name: String,
-    image_filename: String,
-    password: String,
-    auth_token: String): Promise<ResultSetHeader> => {
-    Logger.info(`Adding user ${first_name} ${last_name} to the database`);
+    email: string,
+    firstName: string,
+    lastName: string,
+    password: string): Promise<ResultSetHeader> => {
+    Logger.info(`Adding user ${firstName} ${lastName} to the database`);
     const conn = await getPool().getConnection();
-    const query = "insert into user (email, first_name, last_name, image_filename, password, auth_token) " +
-        "values ( ?, ?, ?, ?, ?, ?)";
-    const [result] = await conn.query(query, [email, first_name, last_name,
-        image_filename, password, auth_token]);
+    const query = "insert into user (email, first_name, last_name, password) " +
+        "values ( ?, ?, ?, ?)";
+    const [result] = await conn.query(query, [email, firstName, lastName, password]);
     await conn.release();
     return result;
 };
