@@ -16,7 +16,8 @@
         "type": "string",
         "format": "email",
         "minLength": 1,
-        "maxLength": 256
+        "maxLength": 256,
+        "pattern": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
       },
       "password": {
         "type": "string",
@@ -57,7 +58,7 @@
   },
   "user_edit": {
     "type": "object",
-    "properties":{
+    "properties": {
       "firstName": {
         "type": "string",
         "minLength": 1,
@@ -276,7 +277,16 @@
       "rating": {
         "type": "number",
         "enum": [
-          1,2,3,4,5,6,7,8,9,10
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ]
       }
     },

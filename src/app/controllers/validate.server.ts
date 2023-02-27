@@ -16,4 +16,4 @@ const validate = async (schema: object, data: any) => {
     }
 }
 
-export { validate }
+export { validate, schemas }

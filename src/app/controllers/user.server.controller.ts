@@ -3,7 +3,21 @@ import Logger from "../../config/logger";
 import * as users from '../models/user.server.model';
 import * as validator from './validate.server';
 
+
+// TODO: Find how/if this pattern should be referenced
+// RFC2822 Email Validation by gskinner: https://regexr.com/2rhq7
 const register = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
+    const validation = await validator.validate(
+        validator.schemas.user_register,
+        req.body
+    );
+
+    if (validation !== true) {
+        res.statusMessage = `Bad Request: ${validation.toString()}`;
+        res.status(400).send();
+        return;
+    }
 
     const email = req.body.email;
     const firstName = req.body.firstName;
@@ -13,12 +27,19 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
     try {
         const result = await users.insert(email, firstName, lastName, password);
-        res.status(201).send({ "user_id": result.insertId });
+        // TODO: Ask if response should be same as API Spec example (userToken)
+        res.status(201).send({ "userId": result.insertId });
         return;
     } catch (err) {
         Logger.error(err);
-        res.statusMessage = "Internal Server Error";
-        res.status(500).send();
+        // TODO: Look at cleaner way to error detect
+        if (err.message.includes("Duplicate entry")) {
+            res.statusMessage = "Email already exists";
+            res.status(403).send();
+        } else {
+            res.statusMessage = "Internal Server Error";
+            res.status(500).send();
+        }
         return;
     }
 }
