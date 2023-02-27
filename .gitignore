@@ -30,3 +30,6 @@ typings/
 *.tgz
 .yarn-integrity
 .env
+
+#MacOS
+*.DS_Store
