@@ -1,8 +1,10 @@
 // TODO: check for best practice way of defining this file
 import * as schemas from '../resources/schemas.json'
 import Ajv from 'ajv';
+import addFormats from "ajv-formats"
 
-const ajv = new Ajv({ removeAdditional: 'all', strict: false });
+const ajv = new Ajv({ removeAdditional: 'all', strict: false, validateFormats: true });
+addFormats(ajv);
 
 const validate = async (schema: object, data: any) => {
     try {

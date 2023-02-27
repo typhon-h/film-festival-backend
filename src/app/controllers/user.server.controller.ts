@@ -4,8 +4,6 @@ import * as users from '../models/user.server.model';
 import * as validator from './validate.server';
 
 
-// TODO: Find how/if this pattern should be referenced
-// RFC2822 Email Validation by gskinner: https://regexr.com/2rhq7
 const register = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
     const validation = await validator.validate(
