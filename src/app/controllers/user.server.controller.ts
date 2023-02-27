@@ -32,8 +32,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
         return;
     } catch (err) {
         Logger.error(err);
-        // TODO: Look at cleaner way to error detect
-        if (err.message.includes("Duplicate entry")) {
+        if (err.code === 'ER_DUP_ENTRY') {
             res.statusMessage = "Email already exists";
             res.status(403).send();
         } else {
