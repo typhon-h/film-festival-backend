@@ -69,7 +69,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
         const token = nanoid(64); // Unique token
         const t = await users.assignToken(id, token);
 
-        res.status(200).send({ "userId": id, "userToken": token });
+        res.status(200).send({ "userId": id, "token": token });
 
         return;
     } catch (err) {
