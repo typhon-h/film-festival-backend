@@ -1,10 +1,12 @@
-type ActiveUser = {
+type User = {
     /**
     * User id as defined by the database
     */
     id: number,
     /**
-    * Authentication token as defined by the database
-    */
-    auth_token: string
+     * User email as entered when created
+     */
+    email: string,
+    first_name: string,
+    last_name: string
 }
