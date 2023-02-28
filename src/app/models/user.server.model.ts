@@ -9,9 +9,6 @@ const insert = async (
     password: string): Promise<ResultSetHeader> => {
     Logger.info(`Adding user ${firstName} ${lastName} to the database`);
     const conn = await getPool().getConnection();
-
-
-
     const query = "insert into user (email, first_name, last_name, password) "
         + "values ( ?, ?, ?, ?)";
     const [result] = await conn.query(query, [email, firstName, lastName, password]);
@@ -42,5 +39,14 @@ const assignToken = async (
     return result;
 };
 
+const unassignToken = async (token: string): Promise<ResultSetHeader> => {
+    Logger.info(`Unassigning active user token`);
+    const conn = await getPool().getConnection();
+    const query = "update user set auth_token = null where auth_token = ?";
+    const [result] = await conn.query(query, [token]);
+    await conn.release();
+    return result;
+};
 
-export { insert, authenticationRequest, assignToken }
+
+export { insert, authenticationRequest, assignToken, unassignToken }
