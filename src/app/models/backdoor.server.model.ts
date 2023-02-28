@@ -1,11 +1,11 @@
-import {getPool} from "../../config/db";
+import { getPool } from "../../config/db";
 import fs from 'mz/fs';
 import * as defaultUsers from "../resources/default_users.json"
 const imageDirectory = './storage/images/';
 const defaultPhotoDirectory = './storage/default/';
 
 import Logger from "../../config/logger";
-import {OkPacket, ResultSetHeader, RowDataPacket} from "mysql2";
+import { OkPacket, ResultSetHeader, RowDataPacket } from "mysql2";
 
 const resetDb = async (): Promise<any> => {
     const promises = [];
@@ -65,7 +65,7 @@ const populateDefaultUsers = async (): Promise<void> => {
 
 
 // @ts-ignore
-async function changePasswordToHash(user:any, passwordIndex:number) {
+async function changePasswordToHash(user: any, passwordIndex: number) {
     // TODO you need to implement "passwords.hash()" yourself, then uncomment the line below.
     // user[passwordIndex] = await passwords.hash(user[passwordIndex]);
 
@@ -83,4 +83,4 @@ const executeSql = async (sql: string): Promise<RowDataPacket[][] | RowDataPacke
     }
 };
 
-export {resetDb, loadData, executeSql}
+export { resetDb, loadData, executeSql }

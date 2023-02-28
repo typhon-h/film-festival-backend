@@ -25,7 +25,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
     try {
         const result = await users.insert(email, firstName, lastName, password);
-        // TODO: Ask if response should be same as API Spec example (userToken)
         res.status(201).send({ "userId": result.insertId });
         return;
     } catch (err) {

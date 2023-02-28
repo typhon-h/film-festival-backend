@@ -1,4 +1,3 @@
-// TODO: check for best practice way of defining this file
 import * as schemas from '../resources/schemas.json'
 import Ajv from 'ajv';
 import addFormats from "ajv-formats"
