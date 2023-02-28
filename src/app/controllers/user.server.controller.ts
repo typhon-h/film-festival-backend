@@ -3,8 +3,7 @@ import Logger from "../../config/logger";
 import * as users from '../models/user.server.model';
 import * as validator from './validate.server';
 import { nanoid } from 'nanoid';
-import * as bcrypt from 'bcrypt';
-const saltRounds = 10;
+import * as bcrypt from "../../config/salt";
 
 const register = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
@@ -23,7 +22,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     // Secure hashing
-    const password = await bcrypt.hash(req.body.password, saltRounds);
+    const password = await bcrypt.hash(req.body.password, bcrypt.saltRounds);
 
 
     try {
