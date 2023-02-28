@@ -1,6 +1,6 @@
 import { getPool } from '../../config/db';
 import Logger from '../../config/logger';
-import { ResultSetHeader } from 'mysql2'
+import { ResultSetHeader } from 'mysql2';
 
 const insert = async (
     email: string,
@@ -9,6 +9,9 @@ const insert = async (
     password: string): Promise<ResultSetHeader> => {
     Logger.info(`Adding user ${firstName} ${lastName} to the database`);
     const conn = await getPool().getConnection();
+
+
+
     const query = "insert into user (email, first_name, last_name, password) "
         + "values ( ?, ?, ?, ?)";
     const [result] = await conn.query(query, [email, firstName, lastName, password]);
@@ -16,13 +19,13 @@ const insert = async (
     return result;
 };
 
-const authenticate = async (
+const authenticationRequest = async (
     email: string,
-    password: string): Promise<User[]> => {
+    password: string): Promise<AuthenticateRequest[]> => {
     Logger.info(`Authenticating email ${email}`);
     const conn = await getPool().getConnection();
-    const query = "select id, email, first_name, last_name from user "
-        + " where email = ? and password = ?";
+    const query = "select id, password from user "
+        + " where email = ?";
     const [result] = await conn.query(query, [email, password]);
     await conn.release();
     return result;
@@ -40,4 +43,4 @@ const assignToken = async (
 };
 
 
-export { insert, authenticate, assignToken }
+export { insert, authenticationRequest, assignToken }

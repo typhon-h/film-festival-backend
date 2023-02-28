@@ -3,7 +3,8 @@ import Logger from "../../config/logger";
 import * as users from '../models/user.server.model';
 import * as validator from './validate.server';
 import { nanoid } from 'nanoid';
-
+import * as bcrypt from 'bcrypt';
+const saltRounds = 10;
 
 const register = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
@@ -21,7 +22,8 @@ const register = async (req: Request, res: Response): Promise<void> => {
     const email = req.body.email;
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
-    const password = req.body.password;
+    // Secure hashing
+    const password = await bcrypt.hash(req.body.password, saltRounds);
 
 
     try {
@@ -55,21 +57,24 @@ const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const email = req.body.email;
-    // TODO: encrypt
     const password = req.body.password;
 
     try {
-        const result = await users.authenticate(email, password);
-        if (result.length === 0) {
+        const result = await users.authenticationRequest(email, password);
+        const userRequested = result[0];
+
+        // If email matched AND password matches hash
+        if (result.length === 0 || !(await bcrypt.compare(password, userRequested.password))) {
             res.status(401).send(`Not Authorized. Incorrect email/password`);
             return;
         }
 
-        const id = result[0].id;
-        const token = nanoid(64); // Unique token
-        const t = await users.assignToken(id, token);
 
-        res.status(200).send({ "userId": id, "token": token });
+
+        const token = nanoid(64); // Unique token
+        const t = await users.assignToken(userRequested.id, token);
+
+        res.status(200).send({ "userId": userRequested.id, "token": token });
 
         return;
     } catch (err) {
