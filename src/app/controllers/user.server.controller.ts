@@ -85,10 +85,21 @@ const login = async (req: Request, res: Response): Promise<void> => {
 }
 
 const logout = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`POST logging out active user`);
+
+    const activeToken = req.headers['x-authorization'];
+    if (activeToken === undefined) { // Not sure if null is possible
+        res.status(401).send("Unauthorized. Missing authorization token");
+        return;
+    }
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        // If null is passed through then WHERE clause defaults to false for null values
+        const result = await users.unassignToken(activeToken.toString()); // Accounts for possible list of strings
+        if (result.affectedRows === 0) {
+            res.status(401).send("Unauthorized. Cannot logout if you are not logged in");
+        } else {
+            res.status(200).send("Logged out successfully");
+        }
         return;
     } catch (err) {
         Logger.error(err);
