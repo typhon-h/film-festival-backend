@@ -19,7 +19,7 @@ const insert = async (
 const authenticationRequest = async (
     email: string,
     password: string): Promise<AuthenticateRequest[]> => {
-    Logger.info(`Authenticating email ${email}`);
+    Logger.info(`Authenticating user with email ${email}`);
     const conn = await getPool().getConnection();
     const query = "select id, password from user "
         + " where email = ?";
@@ -48,14 +48,24 @@ const unassignToken = async (token: string): Promise<ResultSetHeader> => {
     return result;
 };
 
-const getOne = async (id: number): Promise<User[]> => {
-    Logger.info(`Getting user id: ${id}`);
+const checkAuthentication = async (id: number, token: string): Promise<AuthenticateRequest[]> => {
+    Logger.info(`Checking if user ${id} is currently authenticated`);
     const conn = await getPool().getConnection();
-    const query = "select first_name, last_name, email from user where id = ?";
+    const query = "select id from user where auth_token = ? and id = ?";
+    const [result] = await conn.query(query, [token, id]);
+    return result;
+}
+
+const getOne = async (id: number, authenticated: boolean = false): Promise<User[]> => {
+    Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`);
+    const conn = await getPool().getConnection();
+    const query = "select first_name, last_name "
+        + (authenticated ? ", email" : "")
+        + " from user where id = ?";
     const [result] = await conn.query(query, id);
     await conn.release();
     return result;
 }
 
 
-export { insert, authenticationRequest, assignToken, unassignToken }
+export { insert, authenticationRequest, assignToken, unassignToken, checkAuthentication, getOne }
