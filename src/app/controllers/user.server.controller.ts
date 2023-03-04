@@ -175,6 +175,11 @@ const update = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
+    if (token === undefined) {
+        res.status(401).send("Unauthorized.");
+        return;
+    }
+
     if ((newPassword !== undefined && currentPassword === undefined)
         || (newPassword === undefined && currentPassword !== undefined)) {
         res.status(400).send("Bad Request. Both password fields are required to update password");
@@ -183,7 +188,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
 
 
     try {
-        if (token === undefined || !((await isAuthenticated(id, token.toString())).valueOf())) {
+        if (!((await isAuthenticated(id, token.toString())).valueOf())) {
             res.status(403).send("Forbidden. This is not your account.");
             return;
         }
@@ -233,4 +238,4 @@ const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
     }
 }
 
-export { register, login, logout, view, update }
+export { register, login, logout, view, update, isAuthenticated }
