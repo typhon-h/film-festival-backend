@@ -91,16 +91,19 @@ const alter = async (id: number, email: string, firstName: string, lastName: str
     }
 
     if (firstName !== undefined) {
-        query += "firstName = ? ";
+        query += (params.length > 0 ? "," : "");
+        query += "first_name = ? ";
         params.push(firstName);
     }
 
     if (lastName !== undefined) {
-        query += "lastName = ? ";
+        query += (params.length > 0 ? "," : "");
+        query += "last_name = ? ";
         params.push(lastName);
     }
 
     if (password !== undefined) {
+        query += (params.length > 0 ? "," : "");
         query += "password = ? ";
         params.push(password);
     }
