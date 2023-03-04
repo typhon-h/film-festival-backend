@@ -22,5 +22,11 @@ type User = {
      * User last name as defined when created
      */
     last_name: string
+}
 
+type Image = {
+    /**
+     * Name of image file for User profile picture
+     */
+    image_filename: string
 }
