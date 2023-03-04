@@ -16,17 +16,29 @@ const insert = async (
     return result;
 };
 
-const authenticationRequest = async (
-    email: string,
-    password: string): Promise<AuthenticateRequest[]> => {
+const authenticateByEmail = async (
+    email: string): Promise<AuthenticateRequest[]> => {
     Logger.info(`Authenticating user with email ${email}`);
     const conn = await getPool().getConnection();
     const query = "select id, password from user "
         + " where email = ?";
-    const [result] = await conn.query(query, [email, password]);
+    const [result] = await conn.query(query, [email]);
     await conn.release();
     return result;
 };
+
+const authenticateById = async (
+    id: number): Promise<AuthenticateRequest[]> => {
+    Logger.info(`Authenticating user with id ${id}`);
+    const conn = await getPool().getConnection();
+    const query = "select id, password from user "
+        + " where id = ?";
+    const [result] = await conn.query(query, [id]);
+    await conn.release();
+    return result;
+};
+
+
 
 const assignToken = async (
     id: number,
@@ -67,5 +79,49 @@ const getOne = async (id: number, authenticated: boolean = false): Promise<User[
     return result;
 }
 
+const alter = async (id: number, email: string, firstName: string, lastName: string, password: string): Promise<ResultSetHeader> => {
+    Logger.info(`Altering user ${id}`);
+    const conn = await getPool().getConnection();
+    const params = [];
+    let query = "update user set ";
 
-export { insert, authenticationRequest, assignToken, unassignToken, checkAuthentication, getOne }
+    if (email !== undefined) {
+        query += "email = ? ";
+        params.push(email);
+    }
+
+    if (firstName !== undefined) {
+        query += "firstName = ? ";
+        params.push(firstName);
+    }
+
+    if (lastName !== undefined) {
+        query += "lastName = ? ";
+        params.push(lastName);
+    }
+
+    if (password !== undefined) {
+        query += "password = ? ";
+        params.push(password);
+    }
+    query += "where id = ?";
+    params.push(id);
+
+    const [result] = await conn.query(query, params);
+    await conn.release();
+    return result;
+}
+
+
+
+
+export {
+    insert,
+    authenticateByEmail,
+    authenticateById,
+    assignToken,
+    unassignToken,
+    checkAuthentication,
+    getOne,
+    alter
+}
