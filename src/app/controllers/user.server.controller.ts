@@ -111,12 +111,11 @@ const view = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`GET Viewing information for user ${req.params.id}`);
 
     const token = req.headers['x-authorization'];
-    let id;
+    const id = parseInt(req.params.id, 10);
 
-    try {
-        id = parseInt(req.params.id, 10);
-    } catch (err) {
-        res.status(404).send(`No user with ID ${id} was found`);
+    if (isNaN(id)) {
+        res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
+        res.status(400).send();
         return;
     }
 
@@ -162,35 +161,32 @@ const update = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
-    let id;
-    try {
-        id = parseInt(req.params.id, 10);
-    } catch (err) {
-        res.status(400).send("Bad Request. Invalid ID");
-        return;
-    }
-
+    const id = parseInt(req.params.id, 10);
     const token = req.headers['x-authorization'];
     const email = req.body.email;
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
-    let newPassword = req.body.password;
     const currentPassword = req.body.currentPassword;
+    let newPassword = req.body.password;
+
+    if (isNaN(id)) {
+        res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
+        res.status(400).send();
+        return;
+    }
+
+    if ((newPassword !== undefined && currentPassword === undefined)
+        || (newPassword === undefined && currentPassword !== undefined)) {
+        res.status(400).send("Bad Request. Both password fields are required to update password");
+        return;
+    }
 
 
     try {
-
         if (token === undefined || !((await isAuthenticated(id, token.toString())).valueOf())) {
             res.status(403).send("Forbidden. This is not your account.");
             return;
         }
-
-        if ((newPassword !== undefined && currentPassword === undefined)
-            || (newPassword === undefined && currentPassword !== undefined)) {
-            res.status(400).send("Bad Request. Both password fields are required to update password");
-            return;
-        }
-
 
         if (newPassword !== undefined) {
             const currentHash = (await users.authenticateById(id))[0].password;
@@ -210,16 +206,15 @@ const update = async (req: Request, res: Response): Promise<void> => {
 
         if (result.affectedRows === 0) {
             res.status(404).send("User not found");
-            return;
         } else {
             res.status(200).send("User updated successfully");
         }
-
         return;
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
             res.statusMessage = "Email already exists";
             res.status(403).send();
+            return;
         }
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
@@ -229,6 +224,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
 }
 
 const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
+    Logger.http(`Verifying active authentication for user ${id}`);
     try {
         const [result] = await users.checkAuthentication(id, token);
         return result.id === id;
