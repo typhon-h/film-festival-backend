@@ -110,11 +110,29 @@ const logout = async (req: Request, res: Response): Promise<void> => {
 }
 
 const view = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`Viewing information for user ${req.params.id}`);
+
+    const id = parseInt(req.params.id, 10);
+    const token = req.headers['x-authorization'];
+    let authenticated = false;
+
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        if (token !== undefined) {
+            authenticated = (await isAuthenticated(id, token.toString())).valueOf();
+        }
+
+        const [result] = await users.getOne(id, authenticated);
+
+        if (result === undefined) {
+            res.status(404).send(`No user with ID ${id} was found`);
+        } else if (result.email === undefined) {
+            res.status(200).send({ 'firstName': result.first_name, 'lastName': result.last_name });
+        } else {
+            res.status(200).send({ 'email': result.email, 'firstName': result.first_name, 'lastName': result.last_name });
+        }
+
         return;
+
     } catch (err) {
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
@@ -135,6 +153,15 @@ const update = async (req: Request, res: Response): Promise<void> => {
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
+    }
+}
+
+const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
+    try {
+        const [result] = await users.checkAuthentication(id, token);
+        return result.id === id;
+    } catch (err) {
+        return false;
     }
 }
 
