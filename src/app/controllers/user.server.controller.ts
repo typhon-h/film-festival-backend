@@ -59,19 +59,17 @@ const login = async (req: Request, res: Response): Promise<void> => {
     const password = req.body.password;
 
     try {
-        const result = await users.authenticationRequest(email, password);
-        const userRequested = result[0];
+        const [userRequested] = await users.authenticateByEmail(email);
 
         // If email matched AND password matches hash
-        if (result.length === 0 || !(await bcrypt.compare(password, userRequested.password))) {
+        if (userRequested === undefined
+            || !(await bcrypt.compare(password, userRequested.password)).valueOf()) {
             res.status(401).send(`Not Authorized. Incorrect email/password`);
             return;
         }
 
-
-
         const token = nanoid(64); // Unique token
-        const t = await users.assignToken(userRequested.id, token);
+        await users.assignToken(userRequested.id, token);
 
         res.status(200).send({ "userId": userRequested.id, "token": token });
 
@@ -110,13 +108,22 @@ const logout = async (req: Request, res: Response): Promise<void> => {
 }
 
 const view = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`Viewing information for user ${req.params.id}`);
+    Logger.http(`GET Viewing information for user ${req.params.id}`);
 
-    const id = parseInt(req.params.id, 10);
     const token = req.headers['x-authorization'];
-    let authenticated = false;
+    let id;
 
     try {
+        id = parseInt(req.params.id, 10);
+    } catch (err) {
+        res.status(404).send(`No user with ID ${id} was found`);
+        return;
+    }
+
+    try {
+
+        let authenticated = false;
+
         if (token !== undefined) {
             authenticated = (await isAuthenticated(id, token.toString())).valueOf();
         }
@@ -143,12 +150,77 @@ const view = async (req: Request, res: Response): Promise<void> => {
 
 
 const update = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`PATCH updating information for user ${req.params.id}`);
+    const validation = await validator.validate(
+        validator.schemas.user_edit,
+        req.body
+    );
+
+    if (validation !== true) {
+        res.statusMessage = `Bad Request: ${validation.toString()}`;
+        res.status(400).send();
+        return;
+    }
+
+    let id;
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        id = parseInt(req.params.id, 10);
+    } catch (err) {
+        res.status(400).send("Bad Request. Invalid ID");
+        return;
+    }
+
+    const token = req.headers['x-authorization'];
+    const email = req.body.email;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    let newPassword = req.body.password;
+    const currentPassword = req.body.currentPassword;
+
+
+    try {
+
+        if (token === undefined || !((await isAuthenticated(id, token.toString())).valueOf())) {
+            res.status(403).send("Forbidden. This is not your account.");
+            return;
+        }
+
+        if ((newPassword !== undefined && currentPassword === undefined)
+            || (newPassword === undefined && currentPassword !== undefined)) {
+            res.status(400).send("Bad Request. Both password fields are required to update password");
+            return;
+        }
+
+
+        if (newPassword !== undefined) {
+            const currentHash = (await users.authenticateById(id))[0].password;
+
+            if (!(await bcrypt.compare(currentPassword, currentHash)).valueOf()) { // Current password wrong
+                res.status(401).send("Unauthorized or invalid current password");
+                return;
+            } else if (newPassword === currentPassword) { // Same password
+                res.status(403).send("Password is the same as current password");
+                return;
+            } else { // Passwords are valid
+                newPassword = (await bcrypt.hash(newPassword, bcrypt.saltRounds));
+            }
+        }
+
+        const result = await users.alter(id, email, firstName, lastName, newPassword);
+
+        if (result.affectedRows === 0) {
+            res.status(404).send("User not found");
+            return;
+        } else {
+            res.status(200).send("User updated successfully");
+        }
+
         return;
     } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            res.statusMessage = "Email already exists";
+            res.status(403).send();
+        }
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
