@@ -48,5 +48,14 @@ const unassignToken = async (token: string): Promise<ResultSetHeader> => {
     return result;
 };
 
+const getOne = async (id: number): Promise<User[]> => {
+    Logger.info(`Getting user id: ${id}`);
+    const conn = await getPool().getConnection();
+    const query = "select first_name, last_name, email from user where id = ?";
+    const [result] = await conn.query(query, id);
+    await conn.release();
+    return result;
+}
+
 
 export { insert, authenticationRequest, assignToken, unassignToken }
