@@ -71,7 +71,7 @@ const checkAuthentication = async (id: number, token: string): Promise<Authentic
 const getOne = async (id: number, authenticated: boolean = false): Promise<User[]> => {
     Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`);
     const conn = await getPool().getConnection();
-    const query = "select first_name, last_name "
+    const query = "select id, first_name, last_name "
         + (authenticated ? ", email" : "")
         + " from user where id = ?";
     const [result] = await conn.query(query, id);
