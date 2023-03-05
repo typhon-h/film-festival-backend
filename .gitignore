@@ -30,3 +30,4 @@ typings/
 *.tgz
 .yarn-integrity
 .env
+*.DS_Store
