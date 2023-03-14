@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import Logger from "../../config/logger";
 import * as userImages from '../models/user.image.server.model';
-import { isAuthenticated } from '../controllers/user.server.controller';
-import { getTokens } from "../models/user.server.model";
+import { isAuthenticated, isValidToken } from '../controllers/user.server.controller';
+import { getOne } from "../models/user.server.model";
+import { nanoid } from 'nanoid';
 import path = require('path');
 import fs = require('fs');
-const imagesPath = 'storage/images/';
+const filepath = path.resolve('storage/images') + '/';
 const allowedFiletypes = ['png', 'gif', 'jpeg'];
 
 
@@ -20,10 +21,10 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 
     try {
         const [img] = await userImages.getOne(id);
-        const filepath = path.resolve(imagesPath + img.image_filename);
+        const file = path.resolve(filepath + img.image_filename);
 
-        if (fs.existsSync(filepath)) {
-            res.status(200).sendFile(filepath);
+        if (fs.existsSync(file)) {
+            res.status(200).sendFile(file);
         } else {
             res.status(404).send(`Image could not be found`);
         }
@@ -41,7 +42,8 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 const setImage = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`PUT Create/Update profile picture for user: ${req.params.id}`);
     const token = req.headers['x-authorization'];
-    if (token === undefined || !(await getTokens()).includes(token.toString())) { // Undefined or token not exists
+
+    if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
         res.status(401).send("Unauthorized.");
         return;
     }
@@ -65,28 +67,15 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
             res.status(403).send("Forbidden. Cannot change another user's profile picture");
             return;
         }
-
-        const filename = 'user_' + id;
-        const result = await userImages.alter(id, filename + '.' + filetype);
-
-        if (result.affectedRows === 0) { // TODO: This will always be caught by 403
+        if ((await getOne(id)) === undefined) { // TODO: This will always be caught by 403
             res.status(404).send("User not found.");
             return;
         }
 
-        // Check Create/Update
-        let updating = false;
-        allowedFiletypes.every((extension) => { // Check each extension if file exists
-            const existingImage = path.resolve(imagesPath + filename + '.' + extension);
-            if (fs.existsSync(existingImage)) {
-                updating = true;
-                return false; // break
-            }
-            return true;
-        });
+        const newFilename = nanoid() + '.' + filetype;
 
         // Add new profile picture
-        fs.writeFile(path.resolve(imagesPath) + '/' + filename + '.' + filetype, req.body, (err) => {
+        fs.writeFile(filepath + newFilename, req.body, (err) => {
             if (err !== null) {
                 Logger.error(err);
                 res.statusMessage = "Error occured saving image";
@@ -94,28 +83,33 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
             }
         });
 
-
         // Create
-        if (!updating) {
-            res.status(201).send("Created");
-            return;
+        if ((await hasImage(id)).valueOf()) {
+            const oldFilename = (await userImages.getOne(id))[0].image_filename;
+            fs.unlink(filepath + oldFilename, (err) => { // Delete old
+                if (err !== null) {
+                    Logger.error(err);
+                    res.statusMessage = "Error occured deleting old image";
+                    res.status(500).send();
+                }
+            }); //TODO: Possibly delete created image if update fails
+
+            res.statusMessage = "OK. Image Updated";
+            res.status(200);
+
+        } else {
+            res.statusMessage = "Created";
+            res.status(201);
         }
 
-        // Delete existing
-        allowedFiletypes.forEach((extension) => { // Delete old file with different extension
-            const img = path.resolve(imagesPath + filename + '.' + extension);
-            if (extension !== filetype && fs.existsSync(img)) { // Don't delete newly created file
-                fs.unlink(img, (err) => {
-                    if (err !== null) {
-                        Logger.error(err);
-                        res.statusMessage = "Error occured saving image";
-                        res.status(500).send();
-                    }
-                });
-            }
-        });
+        // Update db with new image
+        const result = await userImages.alter(id, newFilename);
+        if (result.affectedRows === 0) { // Should never happen since existence is checked for 403/404 error
+            throw new Error("User no longer in database");
+            //TODO: delete the created file since there is now no reference to it
+        }
 
-        res.status(200).send("OK. Image Updated");
+        res.send();
         return;
     } catch (err) {
         Logger.error(err);
@@ -139,5 +133,16 @@ const deleteImage = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 }
+
+const hasImage = async (id: number): Promise<boolean> => {
+    try {
+        const [img] = await userImages.getOne(id);
+        return img.image_filename !== null;
+    } catch (err) {
+        Logger.error(err);
+        return false;
+    }
+}
+
 
 export { getImage, setImage, deleteImage }
