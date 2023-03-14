@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Logger from "../../config/logger";
 import * as userImages from '../models/user.image.server.model';
 import { isAuthenticated } from '../controllers/user.server.controller';
+import { getTokens } from "../models/user.server.model";
 import path = require('path');
 import fs = require('fs');
 const imagesPath = 'storage/images/';
@@ -38,8 +39,9 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 
 
 const setImage = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`PUT Create/Update profile picture for user: ${req.params.id}`);
     const token = req.headers['x-authorization'];
-    if (token === undefined) {
+    if (token === undefined || !(await getTokens()).includes(token.toString())) { // Undefined or token not exists
         res.status(401).send("Unauthorized.");
         return;
     }
@@ -52,7 +54,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
     // Removing "image/"
     const filetype = req.headers['content-type'].replace('image/', '');
-    if (!req.headers['content-type'].includes('image/')
+    if (!req.headers['content-type'].includes('image/') // includes may be redundant
         || !allowedFiletypes.includes(filetype)) {
         res.status(400).send('Bad Request. Invalid image supplied');
         return;
@@ -72,8 +74,48 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Created vs Updated
+        // Check Create/Update
+        let updating = false;
+        allowedFiletypes.every((extension) => { // Check each extension if file exists
+            const existingImage = path.resolve(imagesPath + filename + '.' + extension);
+            if (fs.existsSync(existingImage)) {
+                updating = true;
+                return false; // break
+            }
+            return true;
+        });
 
+        // Add new profile picture
+        fs.writeFile(path.resolve(imagesPath) + '/' + filename + '.' + filetype, req.body, (err) => {
+            if (err !== null) {
+                Logger.error(err);
+                res.statusMessage = "Error occured saving image";
+                res.status(500).send();
+            }
+        });
+
+
+        // Create
+        if (!updating) {
+            res.status(201).send("Created");
+            return;
+        }
+
+        // Delete existing
+        allowedFiletypes.forEach((extension) => { // Delete old file with different extension
+            const img = path.resolve(imagesPath + filename + '.' + extension);
+            if (extension !== filetype && fs.existsSync(img)) { // Don't delete newly created file
+                fs.unlink(img, (err) => {
+                    if (err !== null) {
+                        Logger.error(err);
+                        res.statusMessage = "Error occured saving image";
+                        res.status(500).send();
+                    }
+                });
+            }
+        });
+
+        res.status(200).send("OK. Image Updated");
         return;
     } catch (err) {
         Logger.error(err);

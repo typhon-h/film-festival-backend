@@ -86,7 +86,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST logging out active user`);
 
     const activeToken = req.headers['x-authorization'];
-    if (activeToken === undefined) { // Not sure if null is possible
+    if (activeToken === undefined || !(await users.getTokens()).includes(activeToken.toString())) { // Not sure if null is possible
         res.status(401).send("Unauthorized. Missing authorization token");
         return;
     }
