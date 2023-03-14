@@ -86,7 +86,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST logging out active user`);
 
     const activeToken = req.headers['x-authorization'];
-    if (activeToken === undefined || !(await users.getTokens()).includes(activeToken.toString())) { // Not sure if null is possible
+    if (activeToken === undefined || !isValidToken(activeToken.toString())) { // Not sure if null is possible || !(await users.getTokens()).includes(activeToken.toString())
         res.status(401).send("Unauthorized. Missing authorization token");
         return;
     }
@@ -238,4 +238,24 @@ const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
     }
 }
 
-export { register, login, logout, view, update, isAuthenticated }
+const isValidToken = async (token: string): Promise<boolean> => {
+    Logger.http(`Verifying token is valid`);
+
+    try {
+        const tokens = await users.getTokens();
+
+        for (const t of tokens) {
+            if (token === t.auth_token) {
+                return true;
+            }
+        }
+
+        return false;
+
+    } catch (err) {
+        Logger.error(err);
+        return false;
+    }
+}
+
+export { register, login, logout, view, update, isAuthenticated, isValidToken }

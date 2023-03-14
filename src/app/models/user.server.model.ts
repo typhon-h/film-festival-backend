@@ -68,7 +68,7 @@ const checkAuthentication = async (id: number, token: string): Promise<Authentic
     return result;
 }
 
-const getTokens = async (): Promise<string[]> => {
+const getTokens = async (): Promise<Token[]> => { // TODO: tidy typing
     Logger.info(`Retrieving all active tokens`);
     const conn = await getPool().getConnection();
     const query = "select auth_token from user where auth_token is not null";
