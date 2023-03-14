@@ -68,6 +68,14 @@ const checkAuthentication = async (id: number, token: string): Promise<Authentic
     return result;
 }
 
+const getTokens = async (): Promise<string[]> => {
+    Logger.info(`Retrieving all active tokens`);
+    const conn = await getPool().getConnection();
+    const query = "select auth_token from user where auth_token is not null";
+    const [result] = await conn.query(query);
+    return result;
+}
+
 const getOne = async (id: number, authenticated: boolean = false): Promise<User[]> => {
     Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`);
     const conn = await getPool().getConnection();
@@ -125,6 +133,7 @@ export {
     assignToken,
     unassignToken,
     checkAuthentication,
+    getTokens,
     getOne,
     alter
 }
