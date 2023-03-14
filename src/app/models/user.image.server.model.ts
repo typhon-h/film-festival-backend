@@ -21,4 +21,13 @@ const alter = async (id: number, filename: string): Promise<ResultSetHeader> => 
     return result;
 }
 
-export { getOne, alter }
+const remove = async (id: number): Promise<ResultSetHeader> => {
+    Logger.info(`Removing profile image for user  ${id}`);
+    const conn = await getPool().getConnection();
+    const query = "update user set image_filename = null where id = ?";
+    const [result] = await conn.query(query, [id]);
+    await conn.release();
+    return result;
+}
+
+export { getOne, alter, remove }
