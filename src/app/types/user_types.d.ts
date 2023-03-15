@@ -34,3 +34,10 @@ type Image = {
      */
     image_filename: string
 }
+
+type Token = {
+    /**
+     * Active token for authorization
+     */
+    auth_token: string
+}

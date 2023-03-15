@@ -86,7 +86,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`POST logging out active user`);
 
     const activeToken = req.headers['x-authorization'];
-    if (activeToken === undefined) { // Not sure if null is possible
+    if (activeToken === undefined || !isValidToken(activeToken.toString())) { // Not sure if null is possible || !(await users.getTokens()).includes(activeToken.toString())
         res.status(401).send("Unauthorized. Missing authorization token");
         return;
     }
@@ -175,6 +175,11 @@ const update = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 
+    if (token === undefined) {
+        res.status(401).send("Unauthorized.");
+        return;
+    }
+
     if ((newPassword !== undefined && currentPassword === undefined)
         || (newPassword === undefined && currentPassword !== undefined)) {
         res.status(400).send("Bad Request. Both password fields are required to update password");
@@ -183,7 +188,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
 
 
     try {
-        if (token === undefined || !((await isAuthenticated(id, token.toString())).valueOf())) {
+        if (!((await isAuthenticated(id, token.toString())).valueOf())) {
             res.status(403).send("Forbidden. This is not your account.");
             return;
         }
@@ -233,4 +238,24 @@ const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
     }
 }
 
-export { register, login, logout, view, update }
+const isValidToken = async (token: string): Promise<boolean> => {
+    Logger.http(`Verifying token is valid`);
+
+    try {
+        const tokens = await users.getTokens();
+
+        for (const t of tokens) {
+            if (token === t.auth_token) {
+                return true;
+            }
+        }
+
+        return false;
+
+    } catch (err) {
+        Logger.error(err);
+        return false;
+    }
+}
+
+export { register, login, logout, view, update, isAuthenticated, isValidToken }
