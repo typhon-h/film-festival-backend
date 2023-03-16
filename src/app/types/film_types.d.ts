@@ -71,3 +71,14 @@ type FilmResult = {
      */
     releaseDate: string
 }
+
+type Genre = {
+    /**
+     * Id of the genre defined by the database
+     */
+    genreId: number,
+    /**
+     * Name of the genre as defined when created
+     */
+    name: string
+}
