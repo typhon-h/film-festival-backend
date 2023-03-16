@@ -2,7 +2,7 @@ type Film = {
     /**
     * Film id as defined by the database
     */
-    id: number,
+    filmId: number,
     /**
      * Film title as defined when created
      */
@@ -12,25 +12,41 @@ type Film = {
      */
     description: string,
     /**
+    * Id for genre of the film as defined by the database
+    */
+    genreId: number,
+    /**
+     * Id of the user that directed the film
+    */
+    directorId: number,
+    /**
+     * First name of the user that directed the film
+     */
+    directorFirstName: string,
+    /**
+     * Last name of the user that directed the film
+     */
+    directorLastName: string,
+    /**
+    * Date film was released
+    */
+    releaseDate: string,
+    /**
+    * Age rating as defined when created
+    */
+    ageRating: string,
+    /**
      * Film runtime as defined when created
      */
     runtime: number,
     /**
-     * Film image as defined when created
+     * Average rating across film reviews
      */
-    image_filename: string,
+    rating: number,
     /**
-     * Id for genre of the film as defined by the database
+     * Number of ratings film has received
      */
-    genre_id: number,
-    /**
-     * Age rating as defined when created
-     */
-    age_rating: string,
-    /**
-     * Film release date as defined when created
-     */
-    release_date: string
+    numReviews: number
 }
 
 type FilmResult = {
