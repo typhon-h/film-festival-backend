@@ -77,7 +77,7 @@ const getAll = async (
             query += " order by release_date ASC ";
             break;
     }
-    query += " , filmId ASC"; //id secondary sort
+    query += " , filmId ASC"; // id secondary sort
 
     const [result] = await conn.query(query, params);
     await conn.release();
@@ -86,6 +86,8 @@ const getAll = async (
 }
 
 const getOne = async (id: number): Promise<Film[]> => {
+    Logger.info(`Getting film ${id}`);
+
     const conn = await getPool().getConnection();
     const query = "select film.id as filmId, title, description, runtime, genre_id as genreId, "
         + " age_rating as ageRating, release_date as releaseDate, user.id as directorId, user.first_name as directorFirstName,  "
@@ -99,7 +101,35 @@ const getOne = async (id: number): Promise<Film[]> => {
     return result;
 }
 
+const insert = async (
+    title: string,
+    description: string,
+    releaseDate: string,
+    genreId: number,
+    runtime: number,
+    ageRating: string,
+    director: number): Promise<ResultSetHeader> => {
+    Logger.info(`Inserting film ${title}`);
+
+    const conn = await getPool().getConnection();
+    const query = "insert into film (title, description, genre_id, runtime, director_id, release_date"
+        + (ageRating !== undefined ? ", age_rating" : "")
+        + ") "
+        + " values(?,?,?,?,?"
+        + (releaseDate !== undefined ? ",?" : ",now()")
+        + (ageRating !== undefined ? ",?" : "")
+        + ")";
+    const params = [title, description, genreId, runtime, director];
+    if (releaseDate !== undefined) { params.push(releaseDate); }
+    if (ageRating !== undefined) { params.push(ageRating) }
+
+    const [result] = await conn.query(query, params);
+    await conn.release();
+    return result;
+}
+
 const getAllGenres = async (): Promise<Genre[]> => {
+    Logger.info(`Retrieving all genres`);
     const conn = await getPool().getConnection();
     const query = "select id as genreId, name from genre";
     const [result] = await conn.query(query);
@@ -108,4 +138,4 @@ const getAllGenres = async (): Promise<Genre[]> => {
 }
 
 
-export { getAll, getOne, getAllGenres }
+export { getAll, getOne, insert, getAllGenres }
