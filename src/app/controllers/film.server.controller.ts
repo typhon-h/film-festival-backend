@@ -41,7 +41,7 @@ const viewAll = async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-        if (!(await genreExists(genreIds)).valueOf()) {
+        if (genreIds !== undefined && !(await genreExists(genreIds)).valueOf()) {
             res.status(400).send("Genre does not exist");
             return;
         }
@@ -57,7 +57,7 @@ const viewAll = async (req: Request, res: Response): Promise<void> => {
         } else if (count === 0) {
             end = result.length;
         } else {
-            end = startIndex + count; //TODO: FIX
+            end = startIndex + count; // TODO: FIX
         }
 
 
@@ -72,10 +72,24 @@ const viewAll = async (req: Request, res: Response): Promise<void> => {
 }
 
 const getOne = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`GET Film with id: ${req.params.id}`);
+
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) { // TODO: Check with Morgan if 400 is required or leave as 500
+        res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
+        res.status(400).send();
+        return;
+    }
+
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        const [result] = await films.getOne(id);
+        if (result !== undefined) {
+            res.status(200).send(result);
+        } else {
+            res.status(404).send(`No film with id: ${id} found`);
+        }
+
         return;
     } catch (err) {
         Logger.error(err);
@@ -129,9 +143,8 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
 
 const getGenres = async (req: Request, res: Response): Promise<void> => {
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        const result = await films.getAllGenres();
+        res.status(200).send(result);
         return;
     } catch (err) {
         Logger.error(err);
@@ -141,12 +154,12 @@ const getGenres = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-const genreExists = async (ids: number[]): Promise<boolean> => {
+const genreExists = async (ids: Array<number>): Promise<boolean> => {
     try {
         const genres = await films.getAllGenres();
-        for (let id in ids) {
+        for (const id of ids) {
             const matches = genres.filter((genre) => {
-                return genre.genreId === ids[parseInt(id, 10)];
+                return genre.genreId === id;
             });
 
             if (matches.length === 0) {
