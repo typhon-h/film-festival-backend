@@ -5,6 +5,8 @@ import addFormats from "ajv-formats"
 const ajv = new Ajv({ removeAdditional: 'all', strict: false, validateFormats: true });
 addFormats(ajv);
 
+ajv.addFormat("integer", /^\d+$/);
+
 const validate = async (schema: object, data: any) => {
     try {
         const validator = ajv.compile(schema);
