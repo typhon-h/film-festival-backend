@@ -38,8 +38,6 @@ const authenticateById = async (
     return result;
 };
 
-
-
 const assignToken = async (
     id: number,
     token: string): Promise<ResultSetHeader> => {
@@ -76,13 +74,23 @@ const getTokens = async (): Promise<Token[]> => { // TODO: tidy typing
     return result;
 }
 
-const getOne = async (id: number, authenticated: boolean = false): Promise<User[]> => {
+const getOneById = async (id: number, authenticated: boolean = false): Promise<User[]> => {
     Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`);
     const conn = await getPool().getConnection();
     const query = "select id, first_name, last_name "
         + (authenticated ? ", email" : "")
         + " from user where id = ?";
     const [result] = await conn.query(query, id);
+    await conn.release();
+    return result;
+}
+
+const getOneByToken = async (token: string): Promise<User[]> => {
+    Logger.info(`Getting user by token.`);
+    const conn = await getPool().getConnection();
+    const query = "select id, first_name, last_name " // TODO: consider returning email as token = authorized
+        + " from user where auth_token = ?";
+    const [result] = await conn.query(query, token);
     await conn.release();
     return result;
 }
@@ -134,6 +142,7 @@ export {
     unassignToken,
     checkAuthentication,
     getTokens,
-    getOne,
+    getOneById,
+    getOneByToken,
     alter
 }
