@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import Logger from "../../config/logger";
 import * as validator from './validate.server';
 import * as films from '../models/film.server.model';
-
-
+import { isValidToken, retrieve } from "./user.server.controller";
 
 const viewAll = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`GET all films that match body criteria`);
@@ -100,12 +99,54 @@ const getOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const addOne = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`POST adding new film ${req.body.title}`);
+    const validation = await validator.validate(
+        validator.schemas.film_post,
+        req.body
+    );
+
+    if (validation !== true) {
+        res.statusMessage = `Bad Request: ${validation.toString()}`;
+        res.status(400).send();
+        return;
+    }
+
+    const title = req.body.title;
+    const description = req.body.description;
+    const releaseDate = req.body.releaseDate;
+    const genreId = parseInt(req.body.genreId, 10);
+    const runtime = req.body.runtime;
+    const ageRating = req.body.ageRating;
+
+    const token = req.headers['x-authorization'];
+
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        if (token === undefined || !((await isValidToken(token.toString())).valueOf())) {
+            res.status(401).send("Unauthorized. You must be a registered user");
+            return;
+        }
+
+        if (releaseDate !== undefined && Date.parse(releaseDate) < Date.now()) {
+            res.status(403).send("Forbidden. Cannot release film in the past");
+            return;
+        }
+
+        if (!(await genreExists([genreId])).valueOf()) {
+            res.status(400).send(`Genre id ${genreId} does not exist`);
+            return;
+        }
+
+        const director = (await retrieve(token.toString())).id;
+
+        const result = await films.insert(title, description, releaseDate, genreId, runtime, ageRating, director);
+
+        res.status(201).send({ "filmId": result.insertId });
         return;
     } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            res.statusMessage = "Forbidden. Film title is not unique";
+            res.status(403).send();
+        }
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
@@ -142,6 +183,8 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const getGenres = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`GET all genres`);
+
     try {
         const result = await films.getAllGenres();
         res.status(200).send(result);
@@ -154,7 +197,9 @@ const getGenres = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-const genreExists = async (ids: Array<number>): Promise<boolean> => {
+const genreExists = async (ids: number[]): Promise<boolean> => {
+    Logger.http(`Checking if genres exist: ${ids}`);
+
     try {
         const genres = await films.getAllGenres();
         for (const id of ids) {
