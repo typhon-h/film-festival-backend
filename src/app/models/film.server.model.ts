@@ -84,6 +84,13 @@ const getAll = async (
 
 }
 
+const getAllGenres = async (): Promise<Genre[]> => {
+    const conn = await getPool().getConnection();
+    const query = "select id as genreId, name from genre";
+    const [result] = await conn.query(query);
+    await conn.release();
+    return result;
+}
 
 
-export { getAll }
+export { getAll, getAllGenres }
