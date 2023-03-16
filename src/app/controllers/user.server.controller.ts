@@ -127,7 +127,7 @@ const view = async (req: Request, res: Response): Promise<void> => {
             authenticated = (await isAuthenticated(id, token.toString())).valueOf();
         }
 
-        const [result] = await users.getOne(id, authenticated);
+        const [result] = await users.getOneById(id, authenticated);
 
         if (result === undefined) {
             res.status(404).send(`No user with ID ${id} was found`);
@@ -146,7 +146,6 @@ const view = async (req: Request, res: Response): Promise<void> => {
         return;
     }
 }
-
 
 const update = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`PATCH updating information for user ${req.params.id}`);
@@ -258,4 +257,16 @@ const isValidToken = async (token: string): Promise<boolean> => {
     }
 }
 
-export { register, login, logout, view, update, isAuthenticated, isValidToken }
+const retrieve = async (token: string): Promise<User> => {
+    Logger.http("Retrieving user by token");
+
+    try {
+        const [result] = await users.getOneByToken(token);
+        return result
+    } catch (err) {
+        Logger.error(err);
+        return undefined;
+    }
+}
+
+export { register, login, logout, view, update, isAuthenticated, isValidToken, retrieve }
