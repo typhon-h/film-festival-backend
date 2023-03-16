@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Logger from "../../config/logger";
 import * as userImages from '../models/user.image.server.model';
 import { isAuthenticated, isValidToken } from '../controllers/user.server.controller';
-import { getOne } from "../models/user.server.model";
+import { getOneById } from "../models/user.server.model";
 import { nanoid } from 'nanoid';
 import path = require('path');
 import filesystem = require('fs');
@@ -71,7 +71,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
             res.status(403).send("Forbidden. Cannot change another user's profile picture");
             return;
         }
-        if ((await getOne(id)) === undefined) { // TODO: This will always be caught by 403
+        if ((await getOneById(id)) === undefined) { // TODO: This will always be caught by 403
             res.status(404).send("User not found.");
             return;
         }
@@ -84,7 +84,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
         // Create
         if ((await hasImage(id)).valueOf()) {
             const oldFilename = (await userImages.getOne(id))[0].image_filename;
-            await fs.unlink(filepath + oldFilename); //TODO: possibly do this after db update (store value of condition)
+            await fs.unlink(filepath + oldFilename); // TODO: possibly do this after db update (store value of condition)
 
             res.statusMessage = "OK. Image Updated";
             res.status(200);
@@ -132,7 +132,7 @@ const deleteImage = async (req: Request, res: Response): Promise<void> => {
             res.status(403).send("Forbidden. Cannot delete another user's profile picture");
             return;
         }
-        if ((await getOne(id)) === undefined) { // TODO: This will always be caught by 403
+        if ((await getOneById(id)) === undefined) { // TODO: This will always be caught by 403
             res.status(404).send("User not found.");
             return;
         }
@@ -154,6 +154,7 @@ const deleteImage = async (req: Request, res: Response): Promise<void> => {
 }
 
 const hasImage = async (id: number): Promise<boolean> => {
+    Logger.http(`Checking if user ${id} has profile image`);
     try {
         const [img] = await userImages.getOne(id);
         return img.image_filename !== null;
