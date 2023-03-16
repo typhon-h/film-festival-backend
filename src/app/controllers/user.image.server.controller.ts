@@ -5,7 +5,9 @@ import { isAuthenticated, isValidToken } from '../controllers/user.server.contro
 import { getOne } from "../models/user.server.model";
 import { nanoid } from 'nanoid';
 import path = require('path');
-const fs = require('fs').promises;
+import filesystem = require('fs');
+const fs = filesystem.promises;
+
 const filepath = path.resolve('storage/images') + '/';
 const allowedFiletypes = ['png', 'gif', 'jpeg'];
 
@@ -82,7 +84,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
         // Create
         if ((await hasImage(id)).valueOf()) {
             const oldFilename = (await userImages.getOne(id))[0].image_filename;
-            await fs.unlink(filepath + oldFilename);
+            await fs.unlink(filepath + oldFilename); //TODO: possibly do this after db update (store value of condition)
 
             res.statusMessage = "OK. Image Updated";
             res.status(200);
@@ -101,7 +103,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
         res.send();
         return;
-    } catch (err) {  //TODO: Delete created image if update fails
+    } catch (err) {  // TODO: Delete created image if update fails
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
