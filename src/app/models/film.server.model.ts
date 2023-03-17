@@ -128,6 +128,58 @@ const insert = async (
     return result;
 }
 
+const update = async (id: number,
+    title: string,
+    description: string,
+    genreId: number,
+    runtime: number,
+    ageRating: string,
+    releaseDate: string): Promise<ResultSetHeader> => {
+    Logger.info(`Updating film ${title}`);
+
+    const conn = await getPool().getConnection();
+    const params = []
+    let query = "update film set ";
+
+    if (title !== undefined) {
+        query += " title = ? ";
+        params.push(title);
+    }
+
+    if (description !== undefined) {
+        query += (params.length > 0 ? "," : "") + " description = ? ";
+        params.push(description);
+    }
+
+    if (genreId !== undefined) {
+        query += (params.length > 0 ? "," : "") + " genre_id = ? ";
+        params.push(genreId);
+    }
+
+    if (runtime !== undefined) {
+        query += (params.length > 0 ? "," : "") + " runtime = ? ";
+        params.push(runtime);
+    }
+
+    if (ageRating !== undefined) {
+        query += (params.length > 0 ? "," : "") + " age_rating = ? ";
+        params.push(ageRating);
+    }
+
+    if (releaseDate !== undefined) {
+        query += (params.length > 0 ? "," : "") + " release_date = ? ";
+        params.push(releaseDate);
+    }
+
+    query += "where id = ?";
+    params.push(id);
+
+
+    const [result] = await conn.query(query, params);
+    await conn.release();
+    return result;
+}
+
 const remove = async (id: number): Promise<ResultSetHeader> => {
     Logger.info(`Deleting film id ${id}`);
     const conn = await getPool().getConnection();
@@ -147,4 +199,4 @@ const getAllGenres = async (): Promise<Genre[]> => {
 }
 
 
-export { getAll, getOne, insert, remove, getAllGenres }
+export { getAll, getOne, insert, update, remove, getAllGenres }
