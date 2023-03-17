@@ -3,6 +3,7 @@ import Logger from "../../config/logger";
 import * as validator from './validate.server';
 import * as films from '../models/film.server.model';
 import { isValidToken, retrieve } from "./user.server.controller";
+import { getAll } from "../models/film.review.server.model";
 import path = require('path');
 import filesystem = require('fs');
 const fs = filesystem.promises;
@@ -161,11 +162,80 @@ const addOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const editOne = async (req: Request, res: Response): Promise<void> => {
-    try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+    Logger.http(`PATCH editing film ${req.params.id}`);
+    const validation = await validator.validate(
+        validator.schemas.film_patch,
+        req.body
+    );
+
+    if (validation !== true) {
+        res.statusMessage = `Bad Request: ${validation.toString()}`;
+        res.status(400).send();
         return;
+    }
+
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) { // TODO: Appears this check is returning 401 not 400?
+        res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
+        res.status(400).send();
+        return;
+    }
+    const token = req.headers['x-authorization'];
+    const title = req.body.title;
+    const description = req.body.description;
+    const genreId = req.body.genreId;
+    const runtime = req.body.runtime;
+    const ageRating = req.body.ageRating;
+    const releaseDate = req.body.releaseDate;
+    if (releaseDate !== undefined
+        && (Date.parse(releaseDate) <= Date.now())) { // TODO: Must be in the future vs cannot release in the past
+        res.status(403).send("Release date must be in the future");
+    }
+
+    try {
+
+        if (token === undefined || !(await isValidToken(token.toString()))) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        if (genreId !== undefined && !(await genreExists([genreId])).valueOf()) {
+            res.status(400).send(`Genre id ${genreId} does not exist`);
+            return;
+        }
+
+        const [film] = await films.getOne(id);
+        if (film === undefined) {
+            res.status(404).send(`Not Found. No film with id ${id}`);
+            return;
+        }
+
+        const director = await retrieve(token.toString());
+        if (film.directorId !== director.id) {
+            res.status(403).send("Forbidden. Only the director can delete a film");
+            return;
+        }
+
+        if (releaseDate !== undefined && Date.parse(film.releaseDate) < Date.now()) {
+            res.status(403).send("Forbidden. Release date cannot be changed after it has passed");
+            return;
+        }
+
+        if ((await hasReviews(film.filmId)).valueOf()) {
+            res.status(403).send("Forbidden. Film cannot be edited after it has been reviewed");
+            return;
+        }
+
+
+        const result = await films.update(film.filmId, title, description, genreId, runtime, ageRating, releaseDate);
+        if (result.affectedRows === 1) {
+            res.status(200).send(`OK`);
+            return;
+        } else {
+            res.status(404).send(`Film ${title} Not Found`);
+            return;
+        }
+
     } catch (err) {
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
@@ -207,7 +277,7 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
 
         films.remove(film.filmId);
 
-        if (film.image_filename !== null) { //TODO: CHECK THIS WHEN FILM IMAGES EXIST
+        if (film.image_filename !== null) { // TODO: CHECK THIS WHEN FILM IMAGES EXIST
             await fs.unlink(filepath + film.image_filename);
         }
 
@@ -257,6 +327,17 @@ const genreExists = async (ids: number[]): Promise<boolean> => {
     } catch (err) {
         Logger.error(err);
         return false;
+    }
+}
+
+const hasReviews = async (id: number): Promise<boolean> => {
+
+    try {
+        const result = await getAll(id); // Reviews
+        return result !== undefined;
+    } catch (err) {
+        Logger.error(err);
+        return true; // TODO: safer to assume there is a review on error?
     }
 }
 
