@@ -3,6 +3,11 @@ import Logger from "../../config/logger";
 import * as validator from './validate.server';
 import * as films from '../models/film.server.model';
 import { isValidToken, retrieve } from "./user.server.controller";
+import path = require('path');
+import filesystem = require('fs');
+const fs = filesystem.promises;
+
+const filepath = path.resolve('storage/images') + '/';
 
 const viewAll = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`GET all films that match body criteria`);
@@ -75,7 +80,7 @@ const getOne = async (req: Request, res: Response): Promise<void> => {
 
     const id = parseInt(req.params.id, 10);
 
-    if (isNaN(id)) { // TODO: Check with Morgan if 400 is required or leave as 500
+    if (isNaN(id)) { // TODO: Should really be validated with ajv but appears to use this method on deployed server
         res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
         res.status(400).send();
         return;
@@ -84,6 +89,7 @@ const getOne = async (req: Request, res: Response): Promise<void> => {
     try {
         const [result] = await films.getOne(id);
         if (result !== undefined) {
+            delete result.image_filename;
             res.status(200).send(result);
         } else {
             res.status(404).send(`No film with id: ${id} found`);
@@ -169,10 +175,43 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const deleteOne = async (req: Request, res: Response): Promise<void> => {
+    Logger.http(`DELETE Removing film ${req.params.id}`);
+
+    const id = parseInt(req.params.id, 10);
+    const token = req.headers['x-authorization'];
+
+    if (isNaN(id)) { // TODO: Should really be validated with ajv but appears to use this method on deployed server
+        res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
+        res.status(400).send();
+        return;
+    }
+
+
     try {
-        // Your code goes here
-        res.statusMessage = "Not Implemented Yet!";
-        res.status(501).send();
+        if (token === undefined || !(await isValidToken(token.toString()))) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        const [film] = await films.getOne(id);
+        if (film === undefined) {
+            res.status(404).send(`Not Found. No film with id ${id}`);
+            return;
+        }
+
+        const director = await retrieve(token.toString());
+        if (film.directorId !== director.id) {
+            res.status(403).send("Forbidden. Only the director can delete a film");
+            return;
+        }
+
+        films.remove(film.filmId);
+
+        if (film.image_filename !== null) { //TODO: CHECK THIS WHEN FILM IMAGES EXIST
+            await fs.unlink(filepath + film.image_filename);
+        }
+
+        res.status(200).send("OK");
         return;
     } catch (err) {
         Logger.error(err);
