@@ -275,14 +275,18 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        films.remove(film.filmId);
+        const result = await films.remove(film.filmId);
 
-        if (film.image_filename !== null) { // TODO: CHECK THIS WHEN FILM IMAGES EXIST
-            await fs.unlink(filepath + film.image_filename);
+        if (result.affectedRows === 1) {
+            if (film.image_filename !== null) { // TODO: CHECK THIS WHEN FILM IMAGES EXIST
+                await fs.unlink(filepath + film.image_filename);
+            }
+
+            res.status(200).send("OK");
+            return;
+        } else {
+            throw new Error(`Could not delete film`);
         }
-
-        res.status(200).send("OK");
-        return;
     } catch (err) {
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
@@ -296,8 +300,12 @@ const getGenres = async (req: Request, res: Response): Promise<void> => {
 
     try {
         const result = await films.getAllGenres();
-        res.status(200).send(result);
-        return;
+        if (result !== undefined) {
+            res.status(200).send(result);
+            return;
+        } else {
+            throw new Error(`Could not retrieve genres`);
+        }
     } catch (err) {
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
