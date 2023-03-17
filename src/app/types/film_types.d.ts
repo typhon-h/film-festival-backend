@@ -46,7 +46,11 @@ type Film = {
     /**
      * Number of ratings film has received
      */
-    numReviews: number
+    numReviews: number,
+    /** 
+     * Filename of the film image
+    */
+    image_filename: string
 }
 
 type FilmResult = {
