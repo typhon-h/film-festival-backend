@@ -18,12 +18,18 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(req.params.id, 10);
 
     if (isNaN(id)) {
-        res.status(404).send(`No user with id ${id} found`);
+        res.status(400).send(`No user with id ${id} found`);
         return;
     }
 
     try {
         const [img] = await userImages.getOne(id);
+
+        if (img === undefined) {
+            res.status(404).send(`No user with id ${id} or Image not found`);
+            return;
+        }
+
         const file = path.resolve(filepath + img.image_filename);
 
         await fs.access(file); // Try to access to confirm existence
