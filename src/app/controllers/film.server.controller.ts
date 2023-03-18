@@ -349,4 +349,4 @@ const hasReviews = async (id: number): Promise<boolean> => {
     }
 }
 
-export { viewAll, getOne, addOne, editOne, deleteOne, getGenres };
+export { viewAll, getOne, addOne, editOne, deleteOne, getGenres, hasReviews };
