@@ -60,14 +60,13 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-        res.status(404).send(`No user with id ${id}`);
+        res.status(400).send(`No user with id ${id}`);
         return;
     }
 
     // Removing "image/"
-    const filetype = req.headers['content-type'].replace('image/', '');
-    if (!req.headers['content-type'].includes('image/') // includes may be redundant
-        || !allowedFiletypes.includes(filetype)) {
+    const filetype = (req.headers['content-type'] ? req.headers['content-type'].replace('image/', '') : "");
+    if (!allowedFiletypes.includes(filetype)) {
         res.status(400).send('Bad Request. Invalid image supplied');
         return;
     }
