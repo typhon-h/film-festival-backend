@@ -342,7 +342,7 @@ const hasReviews = async (id: number): Promise<boolean> => {
 
     try {
         const result = await getAll(id); // Reviews
-        return result !== undefined;
+        return result !== undefined && result.length > 0;
     } catch (err) {
         Logger.error(err);
         return true; // TODO: safer to assume there is a review on error?
