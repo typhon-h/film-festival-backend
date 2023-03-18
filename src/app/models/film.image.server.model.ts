@@ -12,4 +12,13 @@ const getOne = async (id: number): Promise<Image[]> => { // Image type from User
     return result;
 };
 
-export { getOne }
+const alter = async (id: number, filename: string): Promise<ResultSetHeader> => {
+    Logger.info(`Updating hero image for film ${id}`);
+    const conn = await getPool().getConnection();
+    const query = "update film set image_filename = ? where id = ?";
+    const [result] = await conn.query(query, [filename, id]);
+    await conn.release();
+    return result;
+}
+
+export { getOne, alter }
