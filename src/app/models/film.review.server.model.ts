@@ -17,4 +17,22 @@ const getAll = async (id: number): Promise<Review[]> => {
 
 }
 
-export { getAll }
+const insert = async (
+    filmId: number,
+    userId: number,
+    rating: number,
+    review: string): Promise<ResultSetHeader> => {
+    Logger.info(`Adding review by user ${userId} for film ${filmId}`);
+
+    const conn = await getPool().getConnection();
+    const query = "insert into film_review (film_id, user_id, rating, review) "
+        + " values (?,?,?,?)";
+    if (review === undefined) {
+        review = null;
+    }
+    const [result] = await conn.query(query, [filmId, userId, rating, review]);
+    await conn.release();
+    return result;
+}
+
+export { getAll, insert }
