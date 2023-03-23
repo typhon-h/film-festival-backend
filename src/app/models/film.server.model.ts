@@ -34,7 +34,7 @@ const getAll = async (
     if (genreIds !== null && genreIds.length > 0) {
         query += "and genre_id in (";
         for (const id of genreIds) {
-            query += (genreIds.indexOf(id) === 0 ? "?" : ",?");
+            query += (genreIds.indexOf(id) === 0 ? "?" : ",?"); //TODO: fix duplicate id
             params.push(id);
         }
         query += ") ";

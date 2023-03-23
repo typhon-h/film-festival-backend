@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Logger from "../../config/logger";
 import * as filmImages from "../models/film.image.server.model"
-import { isAuthenticated, isValidToken } from '../controllers/user.server.controller';
+import { isAuthenticated, isValidToken, retrieve } from '../controllers/user.server.controller';
 import { getOne } from '../models/film.server.model'
 import { hasReviews } from '../controllers/film.server.controller'
 import { nanoid } from "nanoid";
@@ -58,7 +58,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-        res.status(400).send(`No user with id ${id}`);
+        res.status(400).send(`No film with id ${id}`);
         return;
     }
 
@@ -70,7 +70,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-        if (!((await isAuthenticated(id, token.toString())).valueOf())) {
+        if (!((await isAuthenticated((await retrieve(token.toString())).id, token.toString())).valueOf())) { // Fix unecessary calls
             res.status(403).send("Forbidden. Cannot image if you are not the director");
             return;
         }
