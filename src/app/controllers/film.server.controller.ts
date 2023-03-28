@@ -153,6 +153,10 @@ const addOne = async (req: Request, res: Response): Promise<void> => {
         if (err.code === 'ER_DUP_ENTRY') {
             res.statusMessage = "Forbidden. Film title is not unique";
             res.status(403).send();
+            return;
+        } else if (err.code === 'ER_TRUNCATED_WRONG_VALUE') {
+            res.status(400).send("Incorrect datetime value");
+            return;
         }
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
@@ -190,6 +194,7 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
     if (releaseDate !== undefined
         && (Date.parse(releaseDate) <= Date.now())) { // TODO: Must be in the future vs cannot release in the past
         res.status(403).send("Release date must be in the future");
+        return;
     }
 
     try {
