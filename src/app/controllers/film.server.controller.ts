@@ -242,6 +242,10 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
         }
 
     } catch (err) {
+        if (err.code === 'ER_TRUNCATED_WRONG_VALUE') {
+            res.status(400).send("Incorrect datetime value");
+            return;
+        }
         Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
