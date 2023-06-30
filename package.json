@@ -1,7 +1,7 @@
 {
-  "name": "seng365-2023-assignment1-skeleton-project",
+  "name": "Film Festival API",
   "version": "0.0.1",
-  "description": "Skeleton film festival server for SENG365 Assignment 1",
+  "description": "Node.js API for a Film Festival application",
   "main": "dist/server.js",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
