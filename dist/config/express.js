@@ -4,16 +4,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const body_parser_1 = __importDefault(require("body-parser"));
 const cors_middleware_1 = __importDefault(require("../app/middleware/cors.middleware"));
 const logger_1 = __importDefault(require("./logger"));
 exports.default = () => {
     const app = (0, express_1.default)();
     // Middleware
     app.use(cors_middleware_1.default);
-    app.use(body_parser_1.default.json());
-    app.use(body_parser_1.default.raw({ type: 'text/plain' }));
-    app.use(body_parser_1.default.raw({ type: ['image/*'], limit: '5mb' }));
+    // app.use(express.json());
+    app.use(express_1.default.raw({ type: ['image/*'], limit: '5mb' }));
+    app.use(express_1.default.raw({ type: 'text/plain' }));
     // Debug
     app.use((req, res, next) => {
         if (req.path !== '/') {

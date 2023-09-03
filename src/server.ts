@@ -1,21 +1,12 @@
 import express from './config/express'
 import Logger from './config/logger'
+import fetch from 'node-fetch'
 
 const app = express();
 const port = process.env.PORT || 4941;
 
-// Connect to MySQL on start
-async function main() {
-    try {
-        app.listen(port, () => {
-            Logger.info('Listening on port: ' + port)
-        });
-    } catch (err) {
-        Logger.error('Unable to connect to MySQL.')
-        process.exit(1);
-    }
-}
+app.listen(port, () => {
+    Logger.info('Listening on port: ' + port)
+});
 
-main().catch(err => Logger.error(err));
-
-// module.exports = app;
+module.exports = app;

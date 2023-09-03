@@ -40,8 +40,12 @@ const logger_1 = __importDefault(require("../../config/logger"));
 const users = __importStar(require("../models/user.server.model"));
 const validator = __importStar(require("./validate.server"));
 const nanoid_1 = require("nanoid");
+const micro_1 = require("micro");
 const bcrypt = __importStar(require("../../config/salt"));
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.is('application/json')) {
+        req.body = (yield (0, micro_1.json)(req));
+    }
     logger_1.default.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
     const validation = yield validator.validate(validator.schemas.user_register, req.body);
     if (validation !== true) {
@@ -74,6 +78,9 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.register = register;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.is('application/json')) {
+        req.body = (yield (0, micro_1.json)(req));
+    }
     logger_1.default.http(`POST log in user with email: ${req.body.email}`);
     const validation = yield validator.validate(validator.schemas.user_login, req.body);
     if (validation !== true) {
@@ -166,6 +173,9 @@ const view = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.view = view;
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.http(`PATCH updating information for user ${req.params.id}`);
+    if (req.is('application/json')) {
+        req.body = (yield (0, micro_1.json)(req));
+    }
     const validation = yield validator.validate(validator.schemas.user_edit, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;

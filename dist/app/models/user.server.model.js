@@ -14,17 +14,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.alter = exports.getOneByToken = exports.getOneById = exports.getTokens = exports.checkAuthentication = exports.unassignToken = exports.assignToken = exports.authenticateById = exports.authenticateByEmail = exports.insert = void 0;
 const postgres_1 = require("@vercel/postgres");
+const postgres_2 = require("@vercel/postgres");
 const logger_1 = __importDefault(require("../../config/logger"));
 const insert = (email, firstName, lastName, password) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Adding user ${firstName} ${lastName} to the database`);
-    const result = yield (0, postgres_1.sql) `insert into user (email, first_name, last_name, password)
-        values ( ${email}, ${firstName}, ${lastName}, ${password})`;
+    const result = yield (0, postgres_1.sql) `insert into "user" (email, first_name, last_name, password)
+  values ( ${email}, ${firstName}, ${lastName}, ${password}) returning *`;
     return result;
 });
 exports.insert = insert;
 const authenticateByEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Authenticating user with email ${email}`);
-    const result = yield (0, postgres_1.sql) `select id, password from user
+    const result = yield (0, postgres_1.sql) `select id, password from "user"
         where email = ${email}`;
     return result.rows.map((row) => {
         const request = {
@@ -37,7 +38,7 @@ const authenticateByEmail = (email) => __awaiter(void 0, void 0, void 0, functio
 exports.authenticateByEmail = authenticateByEmail;
 const authenticateById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Authenticating user with id ${id}`);
-    const result = yield (0, postgres_1.sql) `select id, password from user
+    const result = yield (0, postgres_1.sql) `select id, password from "user"
          where id = ${id}`;
     return result.rows.map((row) => {
         const request = {
@@ -50,19 +51,19 @@ const authenticateById = (id) => __awaiter(void 0, void 0, void 0, function* () 
 exports.authenticateById = authenticateById;
 const assignToken = (id, token) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Assigning token to user ${id}`);
-    const result = yield (0, postgres_1.sql) `update user set auth_token = ${token} where id = ${id}`;
+    const result = yield (0, postgres_1.sql) `update "user" set auth_token = ${token} where id = ${id}`;
     return result;
 });
 exports.assignToken = assignToken;
 const unassignToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Unassigning active user token`);
-    const result = yield (0, postgres_1.sql) `update user set auth_token = null where auth_token = ${token}`;
+    const result = yield (0, postgres_1.sql) `update "user" set auth_token = null where auth_token = ${token}`;
     return result;
 });
 exports.unassignToken = unassignToken;
 const checkAuthentication = (id, token) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Checking if user ${id} is currently authenticated`);
-    const result = yield (0, postgres_1.sql) `select id from user where auth_token = ${token} and id = ${id}`;
+    const result = yield (0, postgres_1.sql) `select id from "user" where auth_token = ${token} and id = ${id}`;
     return result.rows.map((row) => {
         const request = {
             id: row.id,
@@ -74,7 +75,7 @@ const checkAuthentication = (id, token) => __awaiter(void 0, void 0, void 0, fun
 exports.checkAuthentication = checkAuthentication;
 const getTokens = () => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Retrieving all active tokens`);
-    const result = yield (0, postgres_1.sql) `select auth_token from user where auth_token is not null`;
+    const result = yield (0, postgres_1.sql) `select auth_token from "user" where auth_token is not null`;
     return result.rows.map((row) => {
         const token = {
             auth_token: row.auth_token,
@@ -85,9 +86,13 @@ const getTokens = () => __awaiter(void 0, void 0, void 0, function* () {
 exports.getTokens = getTokens;
 const getOneById = (id, authenticated = false) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Getting user id: ${id}. Authenticated: ${authenticated}`);
-    const result = yield (0, postgres_1.sql) `select id, first_name, last_name
-         ${(authenticated ? ", email" : "")}
-         from user where id = ${id}`;
+    const query = `
+        SELECT id, first_name, last_name
+        ${(authenticated ? ', email' : '')}
+        FROM "user"
+        WHERE id = ${id}`;
+    const conn = yield postgres_2.db.connect();
+    const result = yield conn.query(query);
     return result.rows.map((row) => {
         const user = {
             id: row.id,
@@ -103,7 +108,7 @@ const getOneByToken = (token) => __awaiter(void 0, void 0, void 0, function* () 
     logger_1.default.info(`Getting user by token.`);
     // TODO: consider returning email as token = authorized
     const result = yield (0, postgres_1.sql) `select id, first_name, last_name
-         from user where auth_token = ${token}`;
+         from "user" where auth_token = ${token}`;
     return result.rows.map((row) => {
         const user = {
             id: row.id,
@@ -118,29 +123,30 @@ exports.getOneByToken = getOneByToken;
 const alter = (id, email, firstName, lastName, password) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Altering user ${id}`);
     const params = []; // Keeping to count params bc I'm lazy
-    let query = "update user set ";
+    let query = `update "user" set `;
     if (email !== undefined) {
-        query += `email = ${email} `;
+        query += `email = '${email}' `;
         params.push(email);
     }
     if (firstName !== undefined) {
         query += (params.length > 0 ? "," : "");
-        query += `first_name = ${firstName} `;
+        query += `first_name = '${firstName}' `;
         params.push(firstName);
     }
     if (lastName !== undefined) {
         query += (params.length > 0 ? "," : "");
-        query += `last_name = ${lastName} `;
+        query += `last_name = '${lastName}' `;
         params.push(lastName);
     }
     if (password !== undefined) {
         query += (params.length > 0 ? "," : "");
-        query += `password = ${password} `;
+        query += `password = '${password}' `;
         params.push(password);
     }
     query += `where id = ${id}`;
     params.push(id);
-    const result = yield (0, postgres_1.sql) `${query}`;
+    const conn = yield postgres_2.db.connect();
+    const result = yield conn.query(query);
     return result;
 });
 exports.alter = alter;

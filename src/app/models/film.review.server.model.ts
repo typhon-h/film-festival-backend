@@ -4,9 +4,9 @@ import Logger from '../../config/logger';
 const getAll = async (id: number): Promise<Review[]> => {
     Logger.info(`Getting all films that match criteria`);
 
-    const result = await sql`select film_id, user.id as reviewerId, user.first_name as reviewerFirstName,
-         user.last_name as reviewerLastName,rating, review, timestamp
-         from film_review join user on user.id = film_review.user_id where film_id = ${id}
+    const result = await sql`select film_id, "user".id as reviewerId, "user".first_name as "reviewerFirstName",
+         "user".last_name as "reviewerLastName",rating, review, timestamp
+         from film_review join "user" on "user".id = film_review.user_id where film_id = ${id}
          order by timestamp desc`;
     return result.rows.map((row) => {
         const review: Review = {

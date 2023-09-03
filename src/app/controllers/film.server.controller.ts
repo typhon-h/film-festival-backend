@@ -4,6 +4,7 @@ import * as validator from './validate.server';
 import * as films from '../models/film.server.model';
 import { isValidToken, retrieve } from "./user.server.controller";
 import { getAll } from "../models/film.review.server.model";
+import { json } from "micro"
 import path = require('path');
 import filesystem = require('fs');
 const fs = filesystem.promises;
@@ -106,6 +107,9 @@ const getOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const addOne = async (req: Request, res: Response): Promise<void> => {
+    if (req.is('application/json')) {
+        req.body = (await json(req))
+    }
     Logger.http(`POST adding new film ${req.body.title}`);
     const validation = await validator.validate(
         validator.schemas.film_post,
@@ -166,6 +170,10 @@ const addOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const editOne = async (req: Request, res: Response): Promise<void> => {
+    if (req.is('application/json')) {
+        req.body = (await json(req))
+    }
+
     Logger.http(`PATCH editing film ${req.params.id}`);
     const validation = await validator.validate(
         validator.schemas.film_patch,

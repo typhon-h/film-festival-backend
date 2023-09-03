@@ -3,9 +3,14 @@ import Logger from "../../config/logger";
 import * as users from '../models/user.server.model';
 import * as validator from './validate.server';
 import { nanoid } from 'nanoid';
+import { json } from "micro"
 import * as bcrypt from "../../config/salt";
 
 const register = async (req: Request, res: Response): Promise<void> => {
+    if (req.is('application/json')) {
+        req.body = (await json(req))
+    }
+
     Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
     const validation = await validator.validate(
         validator.schemas.user_register,
@@ -43,6 +48,10 @@ const register = async (req: Request, res: Response): Promise<void> => {
 }
 
 const login = async (req: Request, res: Response): Promise<void> => {
+    if (req.is('application/json')) {
+        req.body = (await json(req))
+    }
+
     Logger.http(`POST log in user with email: ${req.body.email}`);
     const validation = await validator.validate(
         validator.schemas.user_login,
@@ -149,6 +158,10 @@ const view = async (req: Request, res: Response): Promise<void> => {
 
 const update = async (req: Request, res: Response): Promise<void> => {
     Logger.http(`PATCH updating information for user ${req.params.id}`);
+
+    if (req.is('application/json')) {
+        req.body = (await json(req))
+    }
     const validation = await validator.validate(
         validator.schemas.user_edit,
         req.body

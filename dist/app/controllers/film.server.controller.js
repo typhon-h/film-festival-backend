@@ -41,6 +41,7 @@ const validator = __importStar(require("./validate.server"));
 const films = __importStar(require("../models/film.server.model"));
 const user_server_controller_1 = require("./user.server.controller");
 const film_review_server_model_1 = require("../models/film.review.server.model");
+const micro_1 = require("micro");
 const path = require("path");
 const filesystem = require("fs");
 const fs = filesystem.promises;
@@ -132,6 +133,9 @@ const getOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getOne = getOne;
 const addOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.is('application/json')) {
+        req.body = (yield (0, micro_1.json)(req));
+    }
     logger_1.default.http(`POST adding new film ${req.body.title}`);
     const validation = yield validator.validate(validator.schemas.film_post, req.body);
     if (validation !== true) {
@@ -182,6 +186,9 @@ const addOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.addOne = addOne;
 const editOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.is('application/json')) {
+        req.body = (yield (0, micro_1.json)(req));
+    }
     logger_1.default.http(`PATCH editing film ${req.params.id}`);
     const validation = yield validator.validate(validator.schemas.film_patch, req.body);
     if (validation !== true) {
