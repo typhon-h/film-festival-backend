@@ -104,7 +104,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
         // Update db with new image
         const result = await filmImages.alter(id, newFilename);
-        if (result.affectedRows === 0) { // Should never happen since existence is checked for 403/404 error
+        if (result.rowCount === 0) { // Should never happen since existence is checked for 403/404 error
             await fs.unlink(filepath + newFilename); // Remove new file since not referenced in db
             throw new Error("Film no longer in database");
         }

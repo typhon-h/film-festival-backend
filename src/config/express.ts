@@ -25,7 +25,6 @@ export default () => {
     });
 
     // ROUTES
-    require('../app/routes/backdoor.server.routes')(app);
     require('../app/routes/user.server.routes')(app);
     require('../app/routes/film.server.routes')(app);
 

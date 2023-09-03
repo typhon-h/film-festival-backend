@@ -1,7 +1,7 @@
 # App Specific
 storage/images/*
 !storage/images/.gitkeep
-dist
+
 
 # Created by .ignore support plugin (hsz.mobi)
 logs
@@ -29,7 +29,8 @@ typings/
 .node_repl_history
 *.tgz
 .yarn-integrity
-.env
+.env*
 
 #MacOS
 *.DS_Store
+.vercel

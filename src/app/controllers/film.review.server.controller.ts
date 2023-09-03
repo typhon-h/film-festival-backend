@@ -97,7 +97,7 @@ const addReview = async (req: Request, res: Response): Promise<void> => {
         const reviewer = await retrieve(token.toString());
 
         const result = await reviews.insert(id, reviewer.id, rating, review);
-        if (result.affectedRows === 1) {
+        if (result.rowCount === 1) {
             res.status(201).send("Created");
             return;
         } else {

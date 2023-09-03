@@ -27,7 +27,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
     try {
         const result = await users.insert(email, firstName, lastName, password);
-        res.status(201).send({ "userId": result.insertId });
+        res.status(201).send({ "userId": result.rows[0].id });
         return;
     } catch (err) {
         Logger.error(err);
@@ -93,7 +93,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
     try {
         // If null is passed through then WHERE clause defaults to false for null values
         const result = await users.unassignToken(activeToken.toString()); // Accounts for possible list of strings
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             res.status(401).send("Unauthorized. Cannot logout if you are not logged in");
         } else {
             res.status(200).send("Logged out successfully");
@@ -208,7 +208,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
 
         const result = await users.alter(id, email, firstName, lastName, newPassword);
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             res.status(404).send("User not found");
         } else {
             res.status(200).send("User updated successfully");

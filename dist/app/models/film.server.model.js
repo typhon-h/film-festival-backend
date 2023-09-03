@@ -1,33 +1,35 @@
-import { QueryResult, sql } from '@vercel/postgres';
-import Logger from '../../config/logger';
-
-const getAll = async (
-    search: string = null,
-    genreIds: number[] = null,
-    ageRatings: string[] = null,
-    directorId: number = null,
-    reviewerId: number = null,
-    sortBy: string = null): Promise<FilmResult[]> => {
-    Logger.info(`Getting all films that match criteria`);
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllGenres = exports.remove = exports.update = exports.insert = exports.getOne = exports.getAll = void 0;
+const postgres_1 = require("@vercel/postgres");
+const logger_1 = __importDefault(require("../../config/logger"));
+const getAll = (search = null, genreIds = null, ageRatings = null, directorId = null, reviewerId = null, sortBy = null) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Getting all films that match criteria`);
     const params = [];
-
     let query = "select film.id as filmId, title, genre_id as genreId, age_rating as ageRating, "
         + "user.id as directorId, user.first_name as directorFirstName, user.last_name as directorLastName, cast(coalesce(rating,0) as float) as rating, release_date as releaseDate "
         + "from film inner join user on film.director_id=user.id "
-        + "left outer join (select film_id, round(avg(rating),2) as rating from film_review group by film_id) as ratings on ratings.film_id=film.id  "
-
+        + "left outer join (select film_id, round(avg(rating),2) as rating from film_review group by film_id) as ratings on ratings.film_id=film.id  ";
     if (reviewerId !== null) {
         query += " inner join  (select film_id from film_review where user_id=?) as reviews on reviews.film_id = film.id ";
         params.push(reviewerId);
     }
-
     query += "where 1 ";
-
     if (search !== null) {
         query += `and (description LIKE ${'%' + search + '%'} or title LIKE ${'%' + search + '%'}) `;
     }
-
     if (genreIds !== null && genreIds.length > 0) {
         query += "and genre_id in (";
         for (const id of genreIds) {
@@ -35,7 +37,6 @@ const getAll = async (
         }
         query += ") ";
     }
-
     if (ageRatings !== null && ageRatings.length > 0) {
         query += "and age_rating in (";
         for (const rating of ageRatings) {
@@ -43,11 +44,9 @@ const getAll = async (
         }
         query += ") ";
     }
-
     if (directorId !== null) {
         query += ` and director_id = ${directorId} `;
     }
-
     switch (sortBy) {
         case "ALPHABETICAL_ASC":
             query += " order by title ASC ";
@@ -72,10 +71,9 @@ const getAll = async (
             break;
     }
     query += " , filmId ASC"; // id secondary sort
-
-    const result = await sql`${query}`;
+    const result = yield (0, postgres_1.sql) `${query}`;
     return result.rows.map((row) => {
-        const film: FilmResult = {
+        const film = {
             filmId: row.filmId,
             title: row.title,
             genreId: row.genreId,
@@ -88,22 +86,19 @@ const getAll = async (
         };
         return film;
     });
-
-}
-
-const getOne = async (id: number): Promise<Film[]> => {
-    Logger.info(`Getting film ${id}`);
-
-    const result = await sql`select film.id as filmId, title, description, runtime, genre_id as genreId,
+});
+exports.getAll = getAll;
+const getOne = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Getting film ${id}`);
+    const result = yield (0, postgres_1.sql) `select film.id as filmId, title, description, runtime, genre_id as genreId,
          age_rating as ageRating, release_date as releaseDate, user.id as directorId, user.first_name as directorFirstName,
          user.last_name as directorLastName, cast(coalesce(rating,0) as float) as rating, coalesce(numReviews,0) as numReviews, film.image_filename
          from film inner join user on film.director_id=user.id
          left outer join (select film_id, round(avg(rating),2) as rating from film_review group by film_id) as ratings on ratings.film_id=film.id
          left outer join (select film_id, count(*) as numReviews from film_review group by film_id) as reviews on reviews.film_id=film.id
          where film.id = ${id}`;
-
     return result.rows.map((row) => {
-        const film: Film = {
+        const film = {
             filmId: row.filmId,
             title: row.title,
             description: row.description,
@@ -120,18 +115,10 @@ const getOne = async (id: number): Promise<Film[]> => {
         };
         return film;
     });
-}
-
-const insert = async (
-    title: string,
-    description: string,
-    releaseDate: string,
-    genreId: number,
-    runtime: number,
-    ageRating: string,
-    director: number): Promise<QueryResult> => {
-    Logger.info(`Inserting film ${title}`);
-
+});
+exports.getOne = getOne;
+const insert = (title, description, releaseDate, genreId, runtime, ageRating, director) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Inserting film ${title}`);
     const query = "insert into film (title, description, genre_id, runtime, director_id, release_date"
         + (ageRating !== undefined ? ", age_rating" : "")
         + ") "
@@ -139,80 +126,59 @@ const insert = async (
         + (releaseDate !== undefined ? `,${releaseDate}` : ",now()")
         + (ageRating !== undefined ? `,${ageRating}` : "")
         + ")";
-
-    const result = await sql`${query}`;
-
+    const result = yield (0, postgres_1.sql) `${query}`;
     return result;
-}
-
-const update = async (id: number,
-    title: string,
-    description: string,
-    genreId: number,
-    runtime: number,
-    ageRating: string,
-    releaseDate: string): Promise<QueryResult> => {
-    Logger.info(`Updating film ${title}`);
-
-    const params = [] // left in to maintain param count bc I'm lazy
+});
+exports.insert = insert;
+const update = (id, title, description, genreId, runtime, ageRating, releaseDate) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Updating film ${title}`);
+    const params = []; // left in to maintain param count bc I'm lazy
     let query = "update film set ";
-
     if (title !== undefined) {
         query += ` title = ${title} `;
         params.push(title);
     }
-
     if (description !== undefined) {
         query += (params.length > 0 ? "," : "") + ` description = ${description} `;
         params.push(description);
     }
-
     if (genreId !== undefined) {
         query += (params.length > 0 ? "," : "") + ` genre_id = ${genreId} `;
         params.push(genreId);
     }
-
     if (runtime !== undefined) {
         query += (params.length > 0 ? "," : "") + ` runtime = ${runtime} `;
         params.push(runtime);
     }
-
     if (ageRating !== undefined) {
         query += (params.length > 0 ? "," : "") + ` age_rating = ${ageRating} `;
         params.push(ageRating);
     }
-
     if (releaseDate !== undefined) {
         query += (params.length > 0 ? "," : "") + ` release_date = ${releaseDate} `;
         params.push(releaseDate);
     }
-
     query += `where id = ${id}`;
-
-    const result = await sql`${query}`;
+    const result = yield (0, postgres_1.sql) `${query}`;
     return result;
-}
-
-const remove = async (id: number): Promise<QueryResult> => {
-    Logger.info(`Deleting film id ${id}`);
-    const result = await sql`delete from film where id = ${id}`;
-
+});
+exports.update = update;
+const remove = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Deleting film id ${id}`);
+    const result = yield (0, postgres_1.sql) `delete from film where id = ${id}`;
     return result;
-}
-
-const getAllGenres = async (): Promise<Genre[]> => {
-    Logger.info(`Retrieving all genres`);
-
-    const result = await sql`select id as genreId, name from genre`;
-
+});
+exports.remove = remove;
+const getAllGenres = () => __awaiter(void 0, void 0, void 0, function* () {
+    logger_1.default.info(`Retrieving all genres`);
+    const result = yield (0, postgres_1.sql) `select id as genreId, name from genre`;
     return result.rows.map((row) => {
-        const genre: Genre = {
+        const genre = {
             genreId: row.genreId,
             name: row.name,
         };
         return genre;
     });
-}
-
-
-export { getAll, getOne, insert, update, remove, getAllGenres }
+});
+exports.getAllGenres = getAllGenres;
+//# sourceMappingURL=film.server.model.js.map
