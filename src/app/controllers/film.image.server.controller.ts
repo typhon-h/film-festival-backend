@@ -49,74 +49,74 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 
 const setImage = async (req: Request, res: Response): Promise<void> => {
     // Logger.http(`PUT Create/Update hero picture for film: ${req.params.id}`);
-    // const token = req.headers['x-authorization'];
+    const token = req.headers['x-authorization'];
 
-    // if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
-    //     res.status(401).send("Unauthorized.");
-    //     return;
-    // }
+    if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
+        res.status(401).send("Unauthorized.");
+        return;
+    }
 
-    // const id = parseInt(req.params.id, 10);
-    // if (isNaN(id)) {
-    //     res.status(400).send(`No film with id ${id}`);
-    //     return;
-    // }
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        res.status(400).send(`No film with id ${id}`);
+        return;
+    }
 
-    // // Removing "image/"
-    // const filetype = (req.headers['content-type'] ? req.headers['content-type'].replace('image/', '') : "");
-    // if (!allowedFiletypes.includes(filetype)) {
-    //     res.status(400).send('Bad Request. Invalid image supplied');
-    //     return;
-    // }
+    // Removing "image/"
+    const filetype = (req.headers['content-type'] ? req.headers['content-type'].replace('image/', '') : "");
+    if (!allowedFiletypes.includes(filetype)) {
+        res.status(400).send('Bad Request. Invalid image supplied');
+        return;
+    }
 
-    // try {
-    //     if (!((await isAuthenticated((await retrieve(token.toString())).id, token.toString())).valueOf())) { // Fix unecessary calls
-    //         res.status(403).send("Forbidden. Cannot image if you are not the director");
-    //         return;
-    //     }
-    //     if ((await getOne(id)) === undefined) { // TODO: This will always be caught by 403
-    //         res.status(404).send("Film not found.");
-    //         return;
-    //     }
+    try {
+        if (!((await isAuthenticated((await retrieve(token.toString())).id, token.toString())).valueOf())) { // Fix unecessary calls
+            res.status(403).send("Forbidden. Cannot image if you are not the director");
+            return;
+        }
+        if ((await getOne(id)) === undefined) { // TODO: This will always be caught by 403
+            res.status(404).send("Film not found.");
+            return;
+        }
 
-    //     if ((await hasReviews(id)).valueOf()) {
-    //         res.status(403).send("Forbidden. Film cannot be edited after it has been reviewed");
-    //         return;
-    //     }
+        if ((await hasReviews(id)).valueOf()) {
+            res.status(403).send("Forbidden. Film cannot be edited after it has been reviewed");
+            return;
+        }
 
-    //     const newFilename = nanoid() + '.' + filetype;
+        const newFilename = nanoid() + '.' + filetype;
 
-    //     // Add new profile picture
-    //     await fs.writeFile(filepath + newFilename, req.body);
+        // Add new profile picture
+        await fs.writeFile(filepath + newFilename, req.body);
 
-    //     // Create
-    //     if ((await hasImage(id)).valueOf()) {
-    //         const oldFilename = (await filmImages.getOne(id))[0].image_filename;
-    //         await fs.unlink(filepath + oldFilename); // TODO: possibly do this after db update (store value of condition)
+        // Create
+        if ((await hasImage(id)).valueOf()) {
+            const oldFilename = (await filmImages.getOne(id))[0].image_filename;
+            await fs.unlink(filepath + oldFilename); // TODO: possibly do this after db update (store value of condition)
 
-    //         res.statusMessage = "OK. Image Updated";
-    //         res.status(200);
+            res.statusMessage = "OK. Image Updated";
+            res.status(200);
 
-    //     } else {
-    //         res.statusMessage = "Created";
-    //         res.status(201);
-    //     }
+        } else {
+            res.statusMessage = "Created";
+            res.status(201);
+        }
 
-    //     // Update db with new image
-    //     const result = await filmImages.alter(id, newFilename);
-    //     if (result.rowCount === 0) { // Should never happen since existence is checked for 403/404 error
-    //         await fs.unlink(filepath + newFilename); // Remove new file since not referenced in db
-    //         throw new Error("Film no longer in database");
-    //     }
+        // Update db with new image
+        const result = await filmImages.alter(id, newFilename);
+        if (result.rowCount === 0) { // Should never happen since existence is checked for 403/404 error
+            await fs.unlink(filepath + newFilename); // Remove new file since not referenced in db
+            throw new Error("Film no longer in database");
+        }
 
-    //     res.send();
-    //     return;
-    // } catch (err) {  // TODO: Delete created image if update fails
-    //     // Logger.error(err);
-    //     res.statusMessage = "Internal Server Error";
-    //     res.status(500).send();
-    //     return;
-    // }
+        res.send();
+        return;
+    } catch (err) {  // TODO: Delete created image if update fails
+        // Logger.error(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+        return;
+    }
 }
 
 const hasImage = async (id: number): Promise<boolean> => {
