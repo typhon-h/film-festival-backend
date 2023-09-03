@@ -15,7 +15,7 @@ export default () => {
     // Debug
     app.use((req, res, next) => {
         if (req.path !== '/') {
-            Logger.http(`##### ${req.method} ${req.path} #####`);
+            // Logger.http(`##### ${req.method} ${req.path} #####`);
         }
         next();
     });

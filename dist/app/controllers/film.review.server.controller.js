@@ -31,18 +31,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addReview = exports.getReviews = void 0;
-const logger_1 = __importDefault(require("../../config/logger"));
 const reviews = __importStar(require("../models/film.review.server.model"));
 const film_server_model_1 = require("../models/film.server.model");
 const validator = __importStar(require("./validate.server"));
 const user_server_controller_1 = require("./user.server.controller");
 const getReviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET all reviews for film ${req.params.id}`);
+    // // Logger.http(`GET all reviews for film ${req.params.id}`);
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
         res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
@@ -65,7 +61,7 @@ const getReviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -73,7 +69,7 @@ const getReviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.getReviews = getReviews;
 const addReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`POST create a review for film: ${req.params.id}`);
+    // Logger.http(`POST create a review for film: ${req.params.id}`);
     const validation = yield validator.validate(validator.schemas.film_review_post, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -122,7 +118,7 @@ const addReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;

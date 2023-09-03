@@ -12,7 +12,7 @@ const allowedFiletypes = ['png', 'gif', 'jpeg'];
 const filepath = path.resolve('storage/images') + '/';
 
 const getImage = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET Retrieve hero image for film: ${req.params.id}`);
+    // Logger.http(`GET Retrieve hero image for film: ${req.params.id}`);
 
     const id = parseInt(req.params.id, 10);
 
@@ -39,7 +39,7 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
         if (err.code === 'ENOENT') { // Missing file or directory
             res.status(404).send(`Image could not be found`);
         } else {
-            Logger.error(err);
+            // Logger.error(err);
             res.statusMessage = "Internal Server Error";
             res.status(500).send();
         }
@@ -48,7 +48,7 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 }
 
 const setImage = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`PUT Create/Update hero picture for film: ${req.params.id}`);
+    // Logger.http(`PUT Create/Update hero picture for film: ${req.params.id}`);
     const token = req.headers['x-authorization'];
 
     if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
@@ -112,7 +112,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
         res.send();
         return;
     } catch (err) {  // TODO: Delete created image if update fails
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -120,12 +120,12 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 }
 
 const hasImage = async (id: number): Promise<boolean> => {
-    Logger.http(`Checking if film ${id} has hero image`);
+    // Logger.http(`Checking if film ${id} has hero image`);
     try {
         const [img] = await filmImages.getOne(id);
         return img.image_filename !== null;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return false;
     }
 }

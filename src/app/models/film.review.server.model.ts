@@ -2,7 +2,7 @@ import { QueryResult, sql } from '@vercel/postgres';
 import Logger from '../../config/logger';
 
 const getAll = async (id: number): Promise<Review[]> => {
-    Logger.info(`Getting all films that match criteria`);
+    // Logger.info(`Getting all films that match criteria`);
 
     const result = await sql`select film_id, "user".id as reviewerId, "user".first_name as "reviewerFirstName",
          "user".last_name as "reviewerLastName",rating, review, timestamp
@@ -26,7 +26,7 @@ const insert = async (
     userId: number,
     rating: number,
     review: string): Promise<QueryResult> => {
-    Logger.info(`Adding review by user ${userId} for film ${filmId}`);
+    // Logger.info(`Adding review by user ${userId} for film ${filmId}`);
 
     if (review === undefined) {
         review = null;

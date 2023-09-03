@@ -9,7 +9,7 @@ import { isValidToken, isAuthenticated, retrieve } from "./user.server.controlle
 
 
 const getReviews = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET all reviews for film ${req.params.id}`);
+    // // Logger.http(`GET all reviews for film ${req.params.id}`);
 
     const id = parseInt(req.params.id, 10);
 
@@ -35,7 +35,7 @@ const getReviews = async (req: Request, res: Response): Promise<void> => {
             throw new Error(`Reviews could not be retrieved`);
         }
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -44,7 +44,7 @@ const getReviews = async (req: Request, res: Response): Promise<void> => {
 
 
 const addReview = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`POST create a review for film: ${req.params.id}`);
+    // Logger.http(`POST create a review for film: ${req.params.id}`);
     const validation = await validator.validate(
         validator.schemas.film_review_post,
         req.body
@@ -104,7 +104,7 @@ const addReview = async (req: Request, res: Response): Promise<void> => {
             throw new Error("Review was unable to be added to database");
         }
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;

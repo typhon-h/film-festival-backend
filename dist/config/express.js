@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_middleware_1 = __importDefault(require("../app/middleware/cors.middleware"));
-const logger_1 = __importDefault(require("./logger"));
 exports.default = () => {
     const app = (0, express_1.default)();
     // Middleware
@@ -16,7 +15,7 @@ exports.default = () => {
     // Debug
     app.use((req, res, next) => {
         if (req.path !== '/') {
-            logger_1.default.http(`##### ${req.method} ${req.path} #####`);
+            // Logger.http(`##### ${req.method} ${req.path} #####`);
         }
         next();
     });

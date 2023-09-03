@@ -31,12 +31,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retrieve = exports.isValidToken = exports.isAuthenticated = exports.update = exports.view = exports.logout = exports.login = exports.register = void 0;
-const logger_1 = __importDefault(require("../../config/logger"));
 const users = __importStar(require("../models/user.server.model"));
 const validator = __importStar(require("./validate.server"));
 const nanoid_1 = require("nanoid");
@@ -46,7 +42,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.is('application/json')) {
         req.body = (yield (0, micro_1.json)(req));
     }
-    logger_1.default.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
+    // Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
     const validation = yield validator.validate(validator.schemas.user_register, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -64,7 +60,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         if (err.code === 'ER_DUP_ENTRY') {
             res.statusMessage = "Email already exists";
             res.status(403).send();
@@ -81,7 +77,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.is('application/json')) {
         req.body = (yield (0, micro_1.json)(req));
     }
-    logger_1.default.http(`POST log in user with email: ${req.body.email}`);
+    // Logger.http(`POST log in user with email: ${req.body.email}`);
     const validation = yield validator.validate(validator.schemas.user_login, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -104,7 +100,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -112,7 +108,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`POST logging out active user`);
+    // Logger.http(`POST logging out active user`);
     const activeToken = req.headers['x-authorization'];
     if (activeToken === undefined || !isValidToken(activeToken.toString())) { // Not sure if null is possible || !(await users.getTokens()).includes(activeToken.toString())
         res.status(401).send("Unauthorized. Missing authorization token");
@@ -130,7 +126,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -138,7 +134,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.logout = logout;
 const view = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET Viewing information for user ${req.params.id}`);
+    // Logger.http(`GET Viewing information for user ${req.params.id}`);
     const token = req.headers['x-authorization'];
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -164,7 +160,7 @@ const view = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -172,7 +168,7 @@ const view = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.view = view;
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`PATCH updating information for user ${req.params.id}`);
+    // Logger.http(`PATCH updating information for user ${req.params.id}`);
     if (req.is('application/json')) {
         req.body = (yield (0, micro_1.json)(req));
     }
@@ -237,7 +233,7 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(403).send();
             return;
         }
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -245,7 +241,7 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.update = update;
 const isAuthenticated = (id, token) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`Verifying active authentication for user ${id}`);
+    // Logger.http(`Verifying active authentication for user ${id}`);
     try {
         const [result] = yield users.checkAuthentication(id, token);
         return result.id === id;
@@ -256,7 +252,7 @@ const isAuthenticated = (id, token) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.isAuthenticated = isAuthenticated;
 const isValidToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`Verifying token is valid`);
+    // Logger.http(`Verifying token is valid`);
     try {
         const tokens = yield users.getTokens();
         for (const t of tokens) {
@@ -267,19 +263,19 @@ const isValidToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
         return false;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         return false;
     }
 });
 exports.isValidToken = isValidToken;
 const retrieve = (token) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http("Retrieving user by token");
+    // Logger.http("Retrieving user by token");
     try {
         const [result] = yield users.getOneByToken(token);
         return result;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         return undefined;
     }
 });

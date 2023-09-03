@@ -11,7 +11,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
         req.body = (await json(req))
     }
 
-    Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
+    // Logger.http(`POST create a user with name: ${req.body.firstName} ${req.body.lastName}`);
     const validation = await validator.validate(
         validator.schemas.user_register,
         req.body
@@ -35,7 +35,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
         res.status(201).send({ "userId": result.rows[0].id });
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         if (err.code === 'ER_DUP_ENTRY') {
             res.statusMessage = "Email already exists";
             res.status(403).send();
@@ -52,7 +52,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
         req.body = (await json(req))
     }
 
-    Logger.http(`POST log in user with email: ${req.body.email}`);
+    // Logger.http(`POST log in user with email: ${req.body.email}`);
     const validation = await validator.validate(
         validator.schemas.user_login,
         req.body
@@ -84,7 +84,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -92,7 +92,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
 }
 
 const logout = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`POST logging out active user`);
+    // Logger.http(`POST logging out active user`);
 
     const activeToken = req.headers['x-authorization'];
     if (activeToken === undefined || !isValidToken(activeToken.toString())) { // Not sure if null is possible || !(await users.getTokens()).includes(activeToken.toString())
@@ -109,7 +109,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
         }
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -117,7 +117,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
 }
 
 const view = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET Viewing information for user ${req.params.id}`);
+    // Logger.http(`GET Viewing information for user ${req.params.id}`);
 
     const token = req.headers['x-authorization'];
     const id = parseInt(req.params.id, 10);
@@ -149,7 +149,7 @@ const view = async (req: Request, res: Response): Promise<void> => {
         return;
 
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -157,7 +157,7 @@ const view = async (req: Request, res: Response): Promise<void> => {
 }
 
 const update = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`PATCH updating information for user ${req.params.id}`);
+    // Logger.http(`PATCH updating information for user ${req.params.id}`);
 
     if (req.is('application/json')) {
         req.body = (await json(req))
@@ -233,7 +233,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
             res.status(403).send();
             return;
         }
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -241,7 +241,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
 }
 
 const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
-    Logger.http(`Verifying active authentication for user ${id}`);
+    // Logger.http(`Verifying active authentication for user ${id}`);
     try {
         const [result] = await users.checkAuthentication(id, token);
         return result.id === id;
@@ -251,7 +251,7 @@ const isAuthenticated = async (id: number, token: string): Promise<boolean> => {
 }
 
 const isValidToken = async (token: string): Promise<boolean> => {
-    Logger.http(`Verifying token is valid`);
+    // Logger.http(`Verifying token is valid`);
 
     try {
         const tokens = await users.getTokens();
@@ -265,19 +265,19 @@ const isValidToken = async (token: string): Promise<boolean> => {
         return false;
 
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return false;
     }
 }
 
 const retrieve = async (token: string): Promise<User> => {
-    Logger.http("Retrieving user by token");
+    // Logger.http("Retrieving user by token");
 
     try {
         const [result] = await users.getOneByToken(token);
         return result
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return undefined;
     }
 }

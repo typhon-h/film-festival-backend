@@ -10,7 +10,7 @@ const getAll = async (
     directorId: number = null,
     reviewerId: number = null,
     sortBy: string = null): Promise<FilmResult[]> => {
-    Logger.info(`Getting all films that match criteria`);
+    // Logger.info(`Getting all films that match criteria`);
 
     const params = [];
 
@@ -101,7 +101,7 @@ const getAll = async (
 }
 
 const getOne = async (id: number): Promise<Film[]> => {
-    Logger.info(`Getting film ${id}`);
+    // Logger.info(`Getting film ${id}`);
 
     const result = await sql`SELECT
     film.id AS "filmId",
@@ -163,7 +163,7 @@ const insert = async (
     runtime: number,
     ageRating: string,
     director: number): Promise<QueryResult> => {
-    Logger.info(`Inserting film ${title}`);
+    // Logger.info(`Inserting film ${title}`);
 
     const query = `insert into film (title, description, genre_id, runtime, director_id, release_date
         ${(ageRating !== undefined ? ', age_rating' : '')}
@@ -173,7 +173,7 @@ const insert = async (
         ${(ageRating !== undefined ? `,'${ageRating}'` : "")}
         ) returning *`
 
-    Logger.info(query)
+    // Logger.info(query)
     const conn = await db.connect();
     const result = await conn.query(query);
 
@@ -187,7 +187,7 @@ const update = async (id: number,
     runtime: number,
     ageRating: string,
     releaseDate: string): Promise<QueryResult> => {
-    Logger.info(`Updating film ${title} `);
+    // Logger.info(`Updating film ${title} `);
 
     const params = [] // left in to maintain param count bc I'm lazy
     let query = "update film set ";
@@ -230,14 +230,14 @@ const update = async (id: number,
 }
 
 const remove = async (id: number): Promise<QueryResult> => {
-    Logger.info(`Deleting film id ${id} `);
+    // Logger.info(`Deleting film id ${id} `);
     const result = await sql`delete from film where id = ${id} `;
 
     return result;
 }
 
 const getAllGenres = async (): Promise<Genre[]> => {
-    Logger.info(`Retrieving all genres`);
+    // Logger.info(`Retrieving all genres`);
 
     const result = await sql`select id as "genreId", name from genre`;
 

@@ -31,12 +31,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hasReviews = exports.getGenres = exports.deleteOne = exports.editOne = exports.addOne = exports.getOne = exports.viewAll = void 0;
-const logger_1 = __importDefault(require("../../config/logger"));
 const validator = __importStar(require("./validate.server"));
 const films = __importStar(require("../models/film.server.model"));
 const user_server_controller_1 = require("./user.server.controller");
@@ -47,7 +43,7 @@ const filesystem = require("fs");
 const fs = filesystem.promises;
 const filepath = path.resolve('storage/images') + '/';
 const viewAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET all films that match body criteria`);
+    // Logger.http(`GET all films that match body criteria`);
     const validation = yield validator.validate(validator.schemas.film_search, req.query);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -98,7 +94,7 @@ const viewAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -106,7 +102,7 @@ const viewAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.viewAll = viewAll;
 const getOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET Film with id: ${req.params.id}`);
+    // Logger.http(`GET Film with id: ${req.params.id}`);
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) { // TODO: Should really be validated with ajv but appears to use this method on deployed server
         res.statusMessage = `Bad Request: invalid id ${req.params.id}`;
@@ -125,7 +121,7 @@ const getOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -136,7 +132,7 @@ const addOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.is('application/json')) {
         req.body = (yield (0, micro_1.json)(req));
     }
-    logger_1.default.http(`POST adding new film ${req.body.title}`);
+    // Logger.http(`POST adding new film ${req.body.title}`);
     const validation = yield validator.validate(validator.schemas.film_post, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -178,7 +174,7 @@ const addOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).send("Incorrect datetime value");
             return;
         }
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -189,7 +185,7 @@ const editOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.is('application/json')) {
         req.body = (yield (0, micro_1.json)(req));
     }
-    logger_1.default.http(`PATCH editing film ${req.params.id}`);
+    // Logger.http(`PATCH editing film ${req.params.id}`);
     const validation = yield validator.validate(validator.schemas.film_patch, req.body);
     if (validation !== true) {
         res.statusMessage = `Bad Request: ${validation.toString()}`;
@@ -256,7 +252,7 @@ const editOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).send("Incorrect datetime value");
             return;
         }
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -264,7 +260,7 @@ const editOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.editOne = editOne;
 const deleteOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`DELETE Removing film ${req.params.id}`);
+    // Logger.http(`DELETE Removing film ${req.params.id}`);
     const id = parseInt(req.params.id, 10);
     const token = req.headers['x-authorization'];
     if (isNaN(id)) { // TODO: Should really be validated with ajv but appears to use this method on deployed server
@@ -300,7 +296,7 @@ const deleteOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -308,7 +304,7 @@ const deleteOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.deleteOne = deleteOne;
 const getGenres = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET all genres`);
+    // Logger.http(`GET all genres`);
     try {
         const result = yield films.getAllGenres();
         if (result !== undefined) {
@@ -320,7 +316,7 @@ const getGenres = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -328,7 +324,7 @@ const getGenres = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getGenres = getGenres;
 const genreExists = (ids) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`Checking if genres exist: ${ids}`);
+    // Logger.http(`Checking if genres exist: ${ids}`);
     try {
         const genres = yield films.getAllGenres();
         for (const id of ids) {
@@ -342,7 +338,7 @@ const genreExists = (ids) => __awaiter(void 0, void 0, void 0, function* () {
         return true;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         return false;
     }
 });
@@ -352,7 +348,7 @@ const hasReviews = (id) => __awaiter(void 0, void 0, void 0, function* () {
         return result !== undefined && result.length > 0;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         return true; // TODO: safer to assume there is a review on error?
     }
 });

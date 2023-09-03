@@ -8,15 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.remove = exports.alter = exports.getOne = void 0;
 const postgres_1 = require("@vercel/postgres");
-const logger_1 = __importDefault(require("../../config/logger"));
 const getOne = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Retrieving filepath for profile picture of user ${id}`);
+    // Logger.info(`Retrieving filepath for profile picture of user ${id}`);
     const result = yield (0, postgres_1.sql) `select image_filename from user where id = ${id}`;
     return result.rows.map((row) => {
         const image = {
@@ -27,13 +23,13 @@ const getOne = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getOne = getOne;
 const alter = (id, filename) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Updating profile image for user ${id}`);
+    // Logger.info(`Updating profile image for user ${id}`);
     const result = yield (0, postgres_1.sql) `update user set image_filename = ${filename} where id = ${id}`;
     return result;
 });
 exports.alter = alter;
 const remove = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Removing profile image for user  ${id}`);
+    // Logger.info(`Removing profile image for user  ${id}`);
     const result = yield (0, postgres_1.sql) `update user set image_filename = null where id = ${id}`;
     return result;
 });

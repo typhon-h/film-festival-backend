@@ -8,7 +8,7 @@ const insert = async (
     firstName: string,
     lastName: string,
     password: string): Promise<QueryResult> => {
-    Logger.info(`Adding user ${firstName} ${lastName} to the database`);
+    // Logger.info(`Adding user ${firstName} ${lastName} to the database`);
 
     const result = await sql`insert into "user" (email, first_name, last_name, password)
   values ( ${email}, ${firstName}, ${lastName}, ${password}) returning *`
@@ -17,7 +17,7 @@ const insert = async (
 
 const authenticateByEmail = async (
     email: string): Promise<AuthenticateRequest[]> => {
-    Logger.info(`Authenticating user with email ${email}`);
+    // Logger.info(`Authenticating user with email ${email}`);
     const result = await sql`select id, password from "user"
         where email = ${email}`;
 
@@ -32,7 +32,7 @@ const authenticateByEmail = async (
 
 const authenticateById = async (
     id: number): Promise<AuthenticateRequest[]> => {
-    Logger.info(`Authenticating user with id ${id}`);
+    // Logger.info(`Authenticating user with id ${id}`);
 
     const result = await sql`select id, password from "user"
          where id = ${id}`;
@@ -49,7 +49,7 @@ const authenticateById = async (
 const assignToken = async (
     id: number,
     token: string): Promise<QueryResult> => {
-    Logger.info(`Assigning token to user ${id}`);
+    // Logger.info(`Assigning token to user ${id}`);
 
     const result = await sql`update "user" set auth_token = ${token} where id = ${id}`;
 
@@ -57,13 +57,13 @@ const assignToken = async (
 };
 
 const unassignToken = async (token: string): Promise<QueryResult> => {
-    Logger.info(`Unassigning active user token`);
+    // Logger.info(`Unassigning active user token`);
     const result = await sql`update "user" set auth_token = null where auth_token = ${token}`;
     return result;
 };
 
 const checkAuthentication = async (id: number, token: string): Promise<AuthenticateRequest[]> => {
-    Logger.info(`Checking if user ${id} is currently authenticated`);
+    // Logger.info(`Checking if user ${id} is currently authenticated`);
     const result = await sql`select id from "user" where auth_token = ${token} and id = ${id}`;
     return result.rows.map((row) => {
         const request: AuthenticateRequest = {
@@ -75,7 +75,7 @@ const checkAuthentication = async (id: number, token: string): Promise<Authentic
 }
 
 const getTokens = async (): Promise<Token[]> => { // TODO: tidy typing
-    Logger.info(`Retrieving all active tokens`);
+    // Logger.info(`Retrieving all active tokens`);
     const result = await sql`select auth_token from "user" where auth_token is not null`;
     return result.rows.map((row) => {
         const token: Token = {
@@ -86,7 +86,7 @@ const getTokens = async (): Promise<Token[]> => { // TODO: tidy typing
 }
 
 const getOneById = async (id: number, authenticated: boolean = false): Promise<User[]> => {
-    Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`)
+    // Logger.info(`Getting user id: ${id}. Authenticated: ${authenticated}`)
     const query = `
         SELECT id, first_name, last_name
         ${(authenticated ? ', email' : '')}
@@ -108,7 +108,7 @@ const getOneById = async (id: number, authenticated: boolean = false): Promise<U
 }
 
 const getOneByToken = async (token: string): Promise<User[]> => {
-    Logger.info(`Getting user by token.`);
+    // Logger.info(`Getting user by token.`);
     // TODO: consider returning email as token = authorized
     const result = await sql`select id, first_name, last_name
          from "user" where auth_token = ${token}`;
@@ -125,7 +125,7 @@ const getOneByToken = async (token: string): Promise<User[]> => {
 }
 
 const alter = async (id: number, email: string, firstName: string, lastName: string, password: string): Promise<QueryResult> => {
-    Logger.info(`Altering user ${id}`);
+    // Logger.info(`Altering user ${id}`);
 
     const params = [];  // Keeping to count params bc I'm lazy
     let query = `update "user" set `;

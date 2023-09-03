@@ -8,16 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllGenres = exports.remove = exports.update = exports.insert = exports.getOne = exports.getAll = void 0;
 const postgres_1 = require("@vercel/postgres");
 const postgres_2 = require("@vercel/postgres");
-const logger_1 = __importDefault(require("../../config/logger"));
 const getAll = (search = null, genreIds = null, ageRatings = null, directorId = null, reviewerId = null, sortBy = null) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Getting all films that match criteria`);
+    // Logger.info(`Getting all films that match criteria`);
     const params = [];
     let query = `select film.id as "filmId", title, genre_id as "genreId", age_rating as "ageRating",
        "user".id as "directorId", "user".first_name as "directorFirstName", "user".last_name as "directorLastName", COALESCE(rating, 0.0) as "rating", release_date as "releaseDate"
@@ -96,7 +92,7 @@ const getAll = (search = null, genreIds = null, ageRatings = null, directorId = 
 });
 exports.getAll = getAll;
 const getOne = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Getting film ${id}`);
+    // Logger.info(`Getting film ${id}`);
     const result = yield (0, postgres_1.sql) `SELECT
     film.id AS "filmId",
     film.title,
@@ -149,7 +145,7 @@ WHERE
 });
 exports.getOne = getOne;
 const insert = (title, description, releaseDate, genreId, runtime, ageRating, director) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Inserting film ${title}`);
+    // Logger.info(`Inserting film ${title}`);
     const query = `insert into film (title, description, genre_id, runtime, director_id, release_date
         ${(ageRating !== undefined ? ', age_rating' : '')}
         )
@@ -157,14 +153,14 @@ const insert = (title, description, releaseDate, genreId, runtime, ageRating, di
         ${(releaseDate !== undefined ? `,'${releaseDate}'` : `,now()`)}
         ${(ageRating !== undefined ? `,'${ageRating}'` : "")}
         ) returning *`;
-    logger_1.default.info(query);
+    // Logger.info(query)
     const conn = yield postgres_2.db.connect();
     const result = yield conn.query(query);
     return result;
 });
 exports.insert = insert;
 const update = (id, title, description, genreId, runtime, ageRating, releaseDate) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Updating film ${title} `);
+    // Logger.info(`Updating film ${title} `);
     const params = []; // left in to maintain param count bc I'm lazy
     let query = "update film set ";
     if (title !== undefined) {
@@ -198,13 +194,13 @@ const update = (id, title, description, genreId, runtime, ageRating, releaseDate
 });
 exports.update = update;
 const remove = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Deleting film id ${id} `);
+    // Logger.info(`Deleting film id ${id} `);
     const result = yield (0, postgres_1.sql) `delete from film where id = ${id} `;
     return result;
 });
 exports.remove = remove;
 const getAllGenres = () => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Retrieving all genres`);
+    // Logger.info(`Retrieving all genres`);
     const result = yield (0, postgres_1.sql) `select id as "genreId", name from genre`;
     return result.rows.map((row) => {
         const genre = {

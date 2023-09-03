@@ -31,12 +31,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setImage = exports.getImage = void 0;
-const logger_1 = __importDefault(require("../../config/logger"));
 const filmImages = __importStar(require("../models/film.image.server.model"));
 const user_server_controller_1 = require("../controllers/user.server.controller");
 const film_server_model_1 = require("../models/film.server.model");
@@ -48,7 +44,7 @@ const fs = filesystem.promises;
 const allowedFiletypes = ['png', 'gif', 'jpeg'];
 const filepath = path.resolve('storage/images') + '/';
 const getImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`GET Retrieve hero image for film: ${req.params.id}`);
+    // Logger.http(`GET Retrieve hero image for film: ${req.params.id}`);
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
         res.status(400).send(`Invalid id: ${id}`);
@@ -70,7 +66,7 @@ const getImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(404).send(`Image could not be found`);
         }
         else {
-            logger_1.default.error(err);
+            // Logger.error(err);
             res.statusMessage = "Internal Server Error";
             res.status(500).send();
         }
@@ -79,7 +75,7 @@ const getImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getImage = getImage;
 const setImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`PUT Create/Update hero picture for film: ${req.params.id}`);
+    // Logger.http(`PUT Create/Update hero picture for film: ${req.params.id}`);
     const token = req.headers['x-authorization'];
     if (token === undefined || !(0, user_server_controller_1.isValidToken)(token.toString())) { // Undefined or token not exists
         res.status(401).send("Unauthorized.");
@@ -133,7 +129,7 @@ const setImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     catch (err) { // TODO: Delete created image if update fails
-        logger_1.default.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -141,13 +137,13 @@ const setImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.setImage = setImage;
 const hasImage = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.http(`Checking if film ${id} has hero image`);
+    // Logger.http(`Checking if film ${id} has hero image`);
     try {
         const [img] = yield filmImages.getOne(id);
         return img.image_filename !== null;
     }
     catch (err) {
-        logger_1.default.error(err);
+        // Logger.error(err);
         return false;
     }
 });

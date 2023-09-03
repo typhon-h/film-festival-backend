@@ -12,7 +12,7 @@ const fs = filesystem.promises;
 const filepath = path.resolve('storage/images') + '/';
 
 const viewAll = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET all films that match body criteria`);
+    // Logger.http(`GET all films that match body criteria`);
     const validation = await validator.validate(
         validator.schemas.film_search,
         req.query
@@ -70,7 +70,7 @@ const viewAll = async (req: Request, res: Response): Promise<void> => {
         res.status(200).send({ "films": result.slice(startIndex, end), "count": result.length });
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -78,7 +78,7 @@ const viewAll = async (req: Request, res: Response): Promise<void> => {
 }
 
 const getOne = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET Film with id: ${req.params.id}`);
+    // Logger.http(`GET Film with id: ${req.params.id}`);
 
     const id = parseInt(req.params.id, 10);
 
@@ -99,7 +99,7 @@ const getOne = async (req: Request, res: Response): Promise<void> => {
 
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -110,7 +110,7 @@ const addOne = async (req: Request, res: Response): Promise<void> => {
     if (req.is('application/json')) {
         req.body = (await json(req))
     }
-    Logger.http(`POST adding new film ${req.body.title}`);
+    // Logger.http(`POST adding new film ${req.body.title}`);
     const validation = await validator.validate(
         validator.schemas.film_post,
         req.body
@@ -162,7 +162,7 @@ const addOne = async (req: Request, res: Response): Promise<void> => {
             res.status(400).send("Incorrect datetime value");
             return;
         }
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -174,7 +174,7 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
         req.body = (await json(req))
     }
 
-    Logger.http(`PATCH editing film ${req.params.id}`);
+    // Logger.http(`PATCH editing film ${req.params.id}`);
     const validation = await validator.validate(
         validator.schemas.film_patch,
         req.body
@@ -254,7 +254,7 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
             res.status(400).send("Incorrect datetime value");
             return;
         }
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -262,7 +262,7 @@ const editOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const deleteOne = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`DELETE Removing film ${req.params.id}`);
+    // Logger.http(`DELETE Removing film ${req.params.id}`);
 
     const id = parseInt(req.params.id, 10);
     const token = req.headers['x-authorization'];
@@ -305,7 +305,7 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
             throw new Error(`Could not delete film`);
         }
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -313,7 +313,7 @@ const deleteOne = async (req: Request, res: Response): Promise<void> => {
 }
 
 const getGenres = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET all genres`);
+    // Logger.http(`GET all genres`);
 
     try {
         const result = await films.getAllGenres();
@@ -324,7 +324,7 @@ const getGenres = async (req: Request, res: Response): Promise<void> => {
             throw new Error(`Could not retrieve genres`);
         }
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -332,7 +332,7 @@ const getGenres = async (req: Request, res: Response): Promise<void> => {
 }
 
 const genreExists = async (ids: number[]): Promise<boolean> => {
-    Logger.http(`Checking if genres exist: ${ids}`);
+    // Logger.http(`Checking if genres exist: ${ids}`);
 
     try {
         const genres = await films.getAllGenres();
@@ -350,7 +350,7 @@ const genreExists = async (ids: number[]): Promise<boolean> => {
 
 
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return false;
     }
 }
@@ -361,7 +361,7 @@ const hasReviews = async (id: number): Promise<boolean> => {
         const result = await getAll(id); // Reviews
         return result !== undefined && result.length > 0;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return true; // TODO: safer to assume there is a review on error?
     }
 }

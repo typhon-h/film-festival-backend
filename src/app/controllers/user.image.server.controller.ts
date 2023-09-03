@@ -13,7 +13,7 @@ const allowedFiletypes = ['png', 'gif', 'jpeg'];
 
 
 const getImage = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`GET Retrieve profile image for user: ${req.params.id}`);
+    // Logger.http(`GET Retrieve profile image for user: ${req.params.id}`);
 
     const id = parseInt(req.params.id, 10);
 
@@ -40,7 +40,7 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
         if (err.code === 'ENOENT') { // Missing file or directory
             res.status(404).send(`Image could not be found`);
         } else {
-            Logger.error(err);
+            // Logger.error(err);
             res.statusMessage = "Internal Server Error";
             res.status(500).send();
         }
@@ -50,7 +50,7 @@ const getImage = async (req: Request, res: Response): Promise<void> => {
 
 
 const setImage = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`PUT Create/Update profile picture for user: ${req.params.id}`);
+    // Logger.http(`PUT Create/Update profile picture for user: ${req.params.id}`);
     const token = req.headers['x-authorization'];
 
     if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
@@ -109,7 +109,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
         res.send();
         return;
     } catch (err) {  // TODO: Delete created image if update fails
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -118,7 +118,7 @@ const setImage = async (req: Request, res: Response): Promise<void> => {
 
 
 const deleteImage = async (req: Request, res: Response): Promise<void> => {
-    Logger.http(`DELETE Remove profile picture for user: ${req.params.id}`);
+    // Logger.http(`DELETE Remove profile picture for user: ${req.params.id}`);
     const token = req.headers['x-authorization'];
 
     if (token === undefined || !isValidToken(token.toString())) { // Undefined or token not exists
@@ -151,7 +151,7 @@ const deleteImage = async (req: Request, res: Response): Promise<void> => {
         res.status(200).send("Image deleted");
         return;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         res.statusMessage = "Internal Server Error";
         res.status(500).send();
         return;
@@ -159,12 +159,12 @@ const deleteImage = async (req: Request, res: Response): Promise<void> => {
 }
 
 const hasImage = async (id: number): Promise<boolean> => {
-    Logger.http(`Checking if user ${id} has profile image`);
+    // Logger.http(`Checking if user ${id} has profile image`);
     try {
         const [img] = await userImages.getOne(id);
         return img.image_filename !== null;
     } catch (err) {
-        Logger.error(err);
+        // Logger.error(err);
         return false;
     }
 }
